@@ -5,6 +5,8 @@
 #include <winsock2.h>
 #include <stdio.h>
 
+#include <iostream>
+
 #pragma comment(lib, "Ws2_32.lib")
 
 int main(const int, const char* const* const){
@@ -12,8 +14,8 @@ int main(const int, const char* const* const){
     const int portNumber = 9876;
 
     WSADATA wsaData{};
-    SOCKET serverSocket = INVALID_SOCKET; // Server socket for accepting client
-    SOCKET connectedSocket = INVALID_SOCKET; // Connected socket from client
+    SOCKET serverSocket = 0;
+    SOCKET clientSocket = 0;
     sockaddr_in serverAddress{};
     sockaddr_in clientAddress{};
     char msgBuffer[bufferLen]{};
@@ -37,90 +39,75 @@ int main(const int, const char* const* const){
     serverAddress.sin_port = htons(portNumber);
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    ///----------------------
-    /// 3-2. Bind the socket with server address & port number
-    if(SOCKET_ERROR == bind(serverSocket, (SOCKADDR*)&serverAddress,
-        sizeof(serverAddress)))
-    {
-        printf("bind failed with error %u\n", WSAGetLastError());
-        closesocket(serverSocket);
-        WSACleanup();
-        return 1;
-    } else
-    {
-        printf("bind returned success\n");
-    }
-
-    ///----------------------
-    /// 4. Places a socket in a state in which it is listening for an incoming
-    ///    connection.
-    if(SOCKET_ERROR == listen(serverSocket, SOMAXCONN))
-    {
-        printf("listen function failed with error: %d\n", WSAGetLastError());
-        closesocket(serverSocket);
-        WSACleanup();
+    if(bind(serverSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR){
+        (void)printf("bind failed with error %d\n", WSAGetLastError());
+        (void)closesocket(serverSocket);
+        (void)WSACleanup();
         return 1;
     }
 
-    printf("Waiting for client to connect...\n");
-    ///----------------------
-    /// 5. Permits an incoming connection attempt on a socket
-    connectedSocket = accept(serverSocket, (struct sockaddr*)&clientAddress,
-        &sizeOfClientAddress);
-    if(INVALID_SOCKET == connectedSocket)
-    {
-        printf("accept failed with error: %ld\n", WSAGetLastError());
-        closesocket(serverSocket);
-        WSACleanup();
+    if(listen(serverSocket, SOMAXCONN) == SOCKET_ERROR){
+        (void)printf("listen function failed with error %d\n", WSAGetLastError());
+        (void)closesocket(serverSocket);
+        (void)WSACleanup();
+        return 1;
+    }
+
+    (void)printf("[TCP Echo Server] Waiting for client to connect...\n");
+
+    clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &sizeOfClientAddress);
+    if(clientSocket == INVALID_SOCKET){
+        (void)printf("accept failed with error %ld\n", WSAGetLastError());
+        (void)closesocket(serverSocket);
+        (void)WSACleanup();
         return 1;
     } else{
-        printf("Client connected. IP Address : %d.%d.%d.%d, Port Number :%d\n",
-            //--------------------
+        (void)system("cls");
+        (void)printf("[TCP Echo Server] Client (%d.%d.%d.%d: %d) connected...\n\n",
             clientAddress.sin_addr.S_un.S_un_b.s_b1,
             clientAddress.sin_addr.S_un.S_un_b.s_b2,
             clientAddress.sin_addr.S_un.S_un_b.s_b3,
             clientAddress.sin_addr.S_un.S_un_b.s_b4,
-            ntohs(clientAddress.sin_port));
-
+            ntohs(clientAddress.sin_port)
+        );
     }
 
-    ///----------------------
-    /// 6. Send & receive the data on a connected socket
-    while(1)
-    {
+    for(;;){
         memset(msgBuffer, '\0', bufferLen);
-        result = recv(connectedSocket, msgBuffer, bufferLen, 0);
-        if(0 < result)
-        {
-            printf("Bytes received  : %d\n", result);
-            printf("Buffer received : %s\n", msgBuffer);
-        } else if(0 == result)
-        {
-            printf("Connection closed\n");
-            break;
-        } else
-        {
-            printf("Recv failed: %d\n", WSAGetLastError());
-            break;
+        result = recv(clientSocket, msgBuffer, bufferLen, 0);
+
+        if(result > 0){
+            (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                msgBuffer,
+                clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                ntohs(clientAddress.sin_port),
+                result
+            );
+        } else{
+            result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
         }
 
-        /// Echo same message to client
-        result = send(connectedSocket, msgBuffer, result, 0);
-        if(SOCKET_ERROR == result)
-        {
-            printf("Send failed: %d\n", WSAGetLastError());
+        result = send(clientSocket, msgBuffer, result, 0);
+        if(result == SOCKET_ERROR){
+            (void)printf("send failed with error %d\n", WSAGetLastError());
             break;
+        } else{
+            (void)printf("Sent \"%s\" back (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
+                msgBuffer,
+                clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                ntohs(clientAddress.sin_port),
+                result
+            );
         }
-        printf("Bytes sent : %d\n", result);
     }
 
-    ///----------------------
-    /// 7. Closes an existing socket
-    closesocket(connectedSocket);
-    closesocket(serverSocket);
-
-    ///----------------------
-    /// 8. Terminate use of the Winsock Library
-    WSACleanup();
-    return 0;
+    (void)closesocket(clientSocket);
+    (void)closesocket(serverSocket);
+    (void)WSACleanup();
 }
