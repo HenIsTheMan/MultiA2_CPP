@@ -73,6 +73,12 @@ int main(const int, const char* const* const){
                     clientAddress.sin_addr.S_un.S_un_b.s_b4,
                     ntohs(clientAddress.sin_port)
                 );
+
+                //* Send welcome msg
+                char welcomeMsgBuffer[] = "Welcome to Simple TCP/IP Echo Server";
+                const size_t welcomeMsgBufferLen = sizeof(welcomeMsgBuffer) / sizeof(welcomeMsgBuffer[0]);
+                result = send(clientSocket, welcomeMsgBuffer, welcomeMsgBufferLen, 0);
+                //*/
             }
         }
 

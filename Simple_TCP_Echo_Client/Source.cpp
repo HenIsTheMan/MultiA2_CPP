@@ -47,6 +47,24 @@ int main(const int, const char* const* const){
     }
     printf("Connected to server...\n\n");
 
+    //* For welcome msg
+    memset(msgBuffer, '\0', bufferLen);
+    result = recv(clientSocket, msgBuffer, bufferLen, 0);
+    if(result > 0){
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+            msgBuffer,
+            serverAddress.sin_addr.S_un.S_un_b.s_b1,
+            serverAddress.sin_addr.S_un.S_un_b.s_b2,
+            serverAddress.sin_addr.S_un.S_un_b.s_b3,
+            serverAddress.sin_addr.S_un.S_un_b.s_b4,
+            ntohs(serverAddress.sin_port),
+            result
+        );
+    } else{
+        result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
+    }
+    //*/
+
     for(;;){
         (void)printf("[TCP Echo Client] Enter msg: ");
 
