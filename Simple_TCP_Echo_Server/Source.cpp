@@ -76,8 +76,8 @@ int main(const int, const char* const* const){
 
                 //* Send welcome msg
                 char welcomeMsgBuffer[] = "Welcome to Simple TCP/IP Echo Server";
-                const size_t welcomeMsgBufferLen = sizeof(welcomeMsgBuffer) / sizeof(welcomeMsgBuffer[0]);
-                result = send(clientSocket, welcomeMsgBuffer, welcomeMsgBufferLen, 0);
+                const size_t welcomeMsgBufferSize = sizeof(welcomeMsgBuffer) / sizeof(welcomeMsgBuffer[0]);
+                result = send(clientSocket, welcomeMsgBuffer, welcomeMsgBufferSize, 0);
                 //*/
             }
         }
@@ -109,6 +109,10 @@ int main(const int, const char* const* const){
                     ntohs(clientAddress.sin_port),
                     result
                 );
+
+                char customMsgBuffer[] = "Command received :)";
+                const size_t customMsgBufferSize = sizeof(customMsgBuffer) / sizeof(customMsgBuffer[0]);
+                result = send(clientSocket, customMsgBuffer, customMsgBufferSize, 0);
             } else{
                 (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
                     msgBuffer,
@@ -119,6 +123,10 @@ int main(const int, const char* const* const){
                     ntohs(clientAddress.sin_port),
                     result
                 );
+
+                char customMsgBuffer[] = "Msg received :)";
+                const size_t customMsgBufferSize = sizeof(customMsgBuffer) / sizeof(customMsgBuffer[0]);
+                result = send(clientSocket, customMsgBuffer, customMsgBufferSize, 0);
             }
         } else if(result == SOCKET_ERROR){
             (void)system("cls");
