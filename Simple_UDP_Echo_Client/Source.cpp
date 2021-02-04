@@ -87,5 +87,5 @@ int main(const int, const char* const* const){
         return 1;
     }
 
-    WSACleanup();
+    (void)WSACleanup();
 }
