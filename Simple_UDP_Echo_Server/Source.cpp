@@ -8,14 +8,14 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 int main(const int, const char* const* const){
-    const int bufferLen = 1024;
+    const int bufferSize = 1024;
     const int portNumber = 9876;
 
     WSADATA wsaData{};
     SOCKET mySocket = 0;
     SOCKADDR_IN receiverAddress{};
     SOCKADDR_IN senderAddress{};
-    char msgBuffer[bufferLen]{};
+    char msgBuffer[bufferSize]{};
     int result = 0;
     int sizeOfSenderAddress = sizeof(senderAddress);
 
@@ -45,9 +45,9 @@ int main(const int, const char* const* const){
 
     for(;;){
         printf("[UDP Echo Server] Waiting for datagrams...\n");
-        memset(msgBuffer, '\0', bufferLen);
+        memset(msgBuffer, '\0', bufferSize);
 
-        result = recvfrom(mySocket, msgBuffer, bufferLen, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress);
+        result = recvfrom(mySocket, msgBuffer, bufferSize, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress);
         if(result == SOCKET_ERROR){
             (void)printf("recvfrom failed with error %d\n", WSAGetLastError());
             break;

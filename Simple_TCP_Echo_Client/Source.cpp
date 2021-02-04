@@ -12,13 +12,13 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 int main(const int, const char* const* const){
-    const int bufferLen = 1024;
+    const int bufferSize = 1024;
     const int portNumber = 9876;
 
     WSADATA wsaData{};
     SOCKET clientSocket = 0;
     sockaddr_in serverAddress{};
-    char msgBuffer[bufferLen]{};
+    char msgBuffer[bufferSize]{};
     int msgSize = 0;
     int result = 0;
 
@@ -48,8 +48,8 @@ int main(const int, const char* const* const){
     printf("Connected to server...\n\n");
 
     //* For welcome msg
-    memset(msgBuffer, '\0', bufferLen);
-    result = recv(clientSocket, msgBuffer, bufferLen, 0);
+    memset(msgBuffer, '\0', bufferSize);
+    result = recv(clientSocket, msgBuffer, bufferSize, 0);
     if(result > 0){
         (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
             msgBuffer,
@@ -69,7 +69,7 @@ int main(const int, const char* const* const){
         (void)printf("[TCP Echo Client] Enter msg: ");
 
         int i = 0;
-        while(i < bufferLen - 1){
+        while(i < bufferSize - 1){
             msgBuffer[i] = getchar();
             if(msgBuffer[i] == '\n'){
                 msgBuffer[i++] = '\0';
@@ -95,8 +95,8 @@ int main(const int, const char* const* const){
             result
         );
 
-        memset(msgBuffer, '\0', bufferLen);
-        result = recv(clientSocket, msgBuffer, bufferLen, 0);
+        memset(msgBuffer, '\0', bufferSize);
+        result = recv(clientSocket, msgBuffer, bufferSize, 0);
         if(result > 0){
             (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
                 msgBuffer,

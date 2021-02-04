@@ -12,7 +12,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 int main(const int, const char* const* const){
-    const int bufferLen = 1024;
+    const int bufferSize = 1024;
     const char* const serverIPAddress = "127.0.0.1";
     const int portNumber = 9876;
 
@@ -20,7 +20,7 @@ int main(const int, const char* const* const){
     SOCKET mySocket = 0;
     SOCKADDR_IN receiverAddress{};
     SOCKADDR_IN senderAddress{};
-    char msgBuffer[bufferLen]{};
+    char msgBuffer[bufferSize]{};
     int msgSize = 0;
     int result = 0;
     int sizeOfSenderAddress = sizeof(senderAddress);
@@ -45,7 +45,7 @@ int main(const int, const char* const* const){
         (void)printf("[UDP Echo Client] Enter msg: ");
 
         int i = 0;
-        while(i < bufferLen - 1){
+        while(i < bufferSize - 1){
             msgBuffer[i] = getchar();
             if(msgBuffer[i] == '\n'){
                 msgBuffer[i++] = '\0';
@@ -61,7 +61,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        result = recvfrom(mySocket, msgBuffer, bufferLen, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress); //Receive a datagram
+        result = recvfrom(mySocket, msgBuffer, bufferSize, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress); //Receive a datagram
         if(result == SOCKET_ERROR){
             (void)printf("recvfrom failed with error %d\n", WSAGetLastError());
             break;

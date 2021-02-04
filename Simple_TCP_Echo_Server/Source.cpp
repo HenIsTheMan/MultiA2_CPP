@@ -10,7 +10,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 int main(const int, const char* const* const){
-    const int bufferLen = 1024;
+    const int bufferSize = 1024;
     const int portNumber = 9876;
 
     WSADATA wsaData{};
@@ -18,7 +18,7 @@ int main(const int, const char* const* const){
     SOCKET clientSocket = 0;
     sockaddr_in serverAddress{};
     sockaddr_in clientAddress{};
-    char msgBuffer[bufferLen]{};
+    char msgBuffer[bufferSize]{};
     int sizeOfClientAddress = sizeof(clientAddress);
     int result = 0;
 
@@ -82,8 +82,8 @@ int main(const int, const char* const* const){
             }
         }
 
-        memset(msgBuffer, '\0', bufferLen);
-        result = recv(clientSocket, msgBuffer, bufferLen, 0);
+        memset(msgBuffer, '\0', bufferSize);
+        result = recv(clientSocket, msgBuffer, bufferSize, 0);
         //result = recv(clientSocket, msgBuffer, 2, 0);
 
         if(result > 0){
@@ -92,7 +92,7 @@ int main(const int, const char* const* const){
             const size_t pos = msg.find(' ');
 
             if(msgBuffer[0] == '/' && pos != std::string::npos && pos + 1 < msgLen && msg.substr(1, 3) == "msg"){
-                memset(msgBuffer, '\0', bufferLen);
+                memset(msgBuffer, '\0', bufferSize);
                 const std::string substr = msg.substr(pos + 1, msgLen - (pos + 1));
                 const int substrLen = (int)substr.length();
 
