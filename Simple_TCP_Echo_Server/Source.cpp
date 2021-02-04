@@ -91,9 +91,17 @@ int main(const int, const char* const* const){
             const size_t msgLen = msg.length();
             const size_t pos = msg.find(' ');
 
-            if(msgBuffer[0] == '/' && pos != std::string::npos && pos + 1 < msgLen){
+            if(msgBuffer[0] == '/' && pos != std::string::npos && pos + 1 < msgLen && msg.substr(1, 3) == "msg"){
+                memset(msgBuffer, '\0', bufferLen);
+                const std::string substr = msg.substr(pos + 1, msgLen - (pos + 1));
+                const int substrLen = (int)substr.length();
+
+                for(int i = 0; i < substrLen; ++i){
+                    msgBuffer[i] = substr[i];
+                }
+
                 (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
-                    msg.substr(pos + 1, msgLen - (pos + 1)).c_str(),
+                    msgBuffer,
                     clientAddress.sin_addr.S_un.S_un_b.s_b1,
                     clientAddress.sin_addr.S_un.S_un_b.s_b2,
                     clientAddress.sin_addr.S_un.S_un_b.s_b3,
