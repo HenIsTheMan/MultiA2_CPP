@@ -47,7 +47,6 @@ int main(const int, const char* const* const){
     }
     printf("Connected to server...\n\n");
 
-    /// Receive until the peer closes the connection
     for(;;){
         (void)printf("[TCP Echo Client] Enter msg: ");
 
@@ -68,20 +67,28 @@ int main(const int, const char* const* const){
             (void)WSACleanup();
             return 1;
         }
-        printf("Bytes sent: %ld\n", result); //??
+        (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n",
+            msgBuffer,
+            serverAddress.sin_addr.S_un.S_un_b.s_b1,
+            serverAddress.sin_addr.S_un.S_un_b.s_b2,
+            serverAddress.sin_addr.S_un.S_un_b.s_b3,
+            serverAddress.sin_addr.S_un.S_un_b.s_b4,
+            ntohs(serverAddress.sin_port),
+            result
+        );
 
         memset(msgBuffer, '\0', bufferLen);
         result = recv(clientSocket, msgBuffer, bufferLen, 0);
         if(result > 0){
-            //(void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
-            //    msgBuffer,
-            //    clientAddress.sin_addr.S_un.S_un_b.s_b1,
-            //    clientAddress.sin_addr.S_un.S_un_b.s_b2,
-            //    clientAddress.sin_addr.S_un.S_un_b.s_b3,
-            //    clientAddress.sin_addr.S_un.S_un_b.s_b4,
-            //    ntohs(clientAddress.sin_port),
-            //    result
-            //);
+            (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+                msgBuffer,
+                serverAddress.sin_addr.S_un.S_un_b.s_b1,
+                serverAddress.sin_addr.S_un.S_un_b.s_b2,
+                serverAddress.sin_addr.S_un.S_un_b.s_b3,
+                serverAddress.sin_addr.S_un.S_un_b.s_b4,
+                ntohs(serverAddress.sin_port),
+                result
+            );
         } else{
             result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
         }
