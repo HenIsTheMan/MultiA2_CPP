@@ -87,15 +87,31 @@ int main(const int, const char* const* const){
         //result = recv(clientSocket, msgBuffer, 2, 0);
 
         if(result > 0){
-            (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
-                msgBuffer,
-                clientAddress.sin_addr.S_un.S_un_b.s_b1,
-                clientAddress.sin_addr.S_un.S_un_b.s_b2,
-                clientAddress.sin_addr.S_un.S_un_b.s_b3,
-                clientAddress.sin_addr.S_un.S_un_b.s_b4,
-                ntohs(clientAddress.sin_port),
-                result
-            );
+            const std::string msg(msgBuffer);
+            const size_t msgLen = msg.length();
+            const size_t pos = msg.find(' ');
+
+            if(msgBuffer[0] == '/' && pos != std::string::npos && pos + 1 < msgLen){
+                (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                    msg.substr(pos + 1, msgLen - (pos + 1)).c_str(),
+                    clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                    ntohs(clientAddress.sin_port),
+                    result
+                );
+            } else{
+                (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                    msgBuffer,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                    clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                    ntohs(clientAddress.sin_port),
+                    result
+                );
+            }
         } else if(result == SOCKET_ERROR){
             (void)system("cls");
             (void)printf("[TCP Echo Server] Client (%d.%d.%d.%d: %d) disconnected...\n\n",
