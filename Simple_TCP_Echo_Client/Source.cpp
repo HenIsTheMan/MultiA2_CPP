@@ -1,124 +1,92 @@
-//------------------------------
-// Lab02.Exercise3
-// Simple TCP/IP Echo Client
-// Filename : simple_tcp_echo_client.cpp
-//
-
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
 #endif
+
 #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+    #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #endif
 
 #include <winsock2.h>
 #include <stdio.h>
 
-/// Link with ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
 
-#define DEFAULT_BUFLEN 1024
-#define DEFAULT_PORT   9876
+int main(const int, const char* const* const){
+    const int bufferLen = 1024;
+    const int portNumber = 9876;
 
-int main(void)
-{
-    ///----------------------
-    /// Declare and initialize variables.
-    WSADATA     wsaData;                        // Variable to initialize Winsock
-    SOCKET      ConnectSocket = INVALID_SOCKET; // Socket to connect to server
-    sockaddr_in ServerAddress;                // Socket address to connect to server
-    char        MessageBuffer[DEFAULT_BUFLEN];  // Buffer to recv from socket
-    int         BufferLen;                      // Length of the message buffer
-    int         Result;                         // Return value for function result
-    int         i;
+    WSADATA wsaData{};
+    SOCKET clientSocket = 0;
+    sockaddr_in serverAddress{};
+    char msgBuffer[bufferLen]{};
+    int msgSize = 0;
+    int result = 0;
 
-    ///----------------------
-    /// 1. Initiate use of the Winsock Library by a process
-    Result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if( NO_ERROR != Result )
-    {
-        printf("WSAStartup failed: %d\n", Result);
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if(result != NO_ERROR){
+        (void)printf("WSAStartup failed with error %d\n", result);
         return 1;
     }
 
-    ///----------------------
-    /// 2. Create a new socket for application
-    ConnectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if( INVALID_SOCKET == ConnectSocket)
-    {
-        printf("Error at socket(): %ld\n", WSAGetLastError());
-        WSACleanup();
+    clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if(clientSocket == INVALID_SOCKET){
+        (void)printf("socket failed with error %d\n", WSAGetLastError());
+        (void)WSACleanup();
         return 1;
     }
 
-    ///----------------------
-    /// The sockaddr_in structure specifies the address family,
-    /// IP address, and port of the server to be connected to.
-    ServerAddress.sin_family      = AF_INET;
-    /// Connecting to local machine. "127.0.0.1" is the loopback address.
-    ServerAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    ServerAddress.sin_port        = htons(DEFAULT_PORT);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(portNumber);
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1"); //127.0.0.1 is loopback address
 
-    ///----------------------
-    /// 3. Establish a connection to a specified socket
-    if(SOCKET_ERROR == connect(ConnectSocket, (SOCKADDR*)&ServerAddress,
-        sizeof(ServerAddress)))
-    {
-        closesocket(ConnectSocket);
+    if(connect(clientSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR){
+        (void)closesocket(clientSocket);
         printf("Unable to connect to server: %ld\n", WSAGetLastError());
-        WSACleanup();
+        (void)WSACleanup();
         return 1;
     }
-
-    printf("Connected to server.\n");
+    printf("Connected to server...\n\n");
 
     /// Receive until the peer closes the connection
-    while( 1 )
-    {
-        printf("Enter messages : ");
+    for(;;){
+        (void)printf("[TCP Echo Client] Enter msg: ");
 
-        for(i = 0; i < (DEFAULT_BUFLEN-1); i++)
-        {
-            MessageBuffer[i] = getchar();
-            if(MessageBuffer[i] == '\n')
-            {
-                MessageBuffer[i++] = '\0';
+        int i = 0;
+        while(i < bufferLen - 1){
+            msgBuffer[i] = getchar();
+            if(msgBuffer[i] == '\n'){
+                msgBuffer[i++] = '\0';
                 break;
             }
+            ++i;
         }
-        BufferLen = i;
+        msgSize = i;
 
-        /// 4. Send & receive the data on a connected socket
-        if(SOCKET_ERROR == (Result = send(ConnectSocket, MessageBuffer, BufferLen, 0)) )
-        {
-            printf("Send failed: %d\n", WSAGetLastError());
-            closesocket(ConnectSocket);
-            WSACleanup();
+        if((result = send(clientSocket, msgBuffer, msgSize, 0)) == SOCKET_ERROR){
+            (void)printf("send failed with error %d\n", WSAGetLastError());
+            (void)closesocket(clientSocket);
+            (void)WSACleanup();
             return 1;
         }
-        printf("Bytes sent: %ld\n", Result);
+        printf("Bytes sent: %ld\n", result); //??
 
-        memset(MessageBuffer, '\0', DEFAULT_BUFLEN);
-        Result = recv(ConnectSocket, MessageBuffer, DEFAULT_BUFLEN, 0);
-        if(0 < Result)
-        {
-            printf("Bytes received   : %d\n", Result);
-            printf("Message received : %s\n", MessageBuffer);
+        memset(msgBuffer, '\0', bufferLen);
+        result = recv(clientSocket, msgBuffer, bufferLen, 0);
+        if(result > 0){
+            //(void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+            //    msgBuffer,
+            //    clientAddress.sin_addr.S_un.S_un_b.s_b1,
+            //    clientAddress.sin_addr.S_un.S_un_b.s_b2,
+            //    clientAddress.sin_addr.S_un.S_un_b.s_b3,
+            //    clientAddress.sin_addr.S_un.S_un_b.s_b4,
+            //    ntohs(clientAddress.sin_port),
+            //    result
+            //);
+        } else{
+            result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
         }
-        else if(0 == Result)
-        {
-            printf("Connection closed\n");
-        }
-        else
-        {
-            printf("Recv failed: %d\n", WSAGetLastError());
-            break;
-        }
-        printf("Bytes sent : %d\n", Result);
     }
 
-    /// 5. close & cleanup
-    closesocket(ConnectSocket);
-    WSACleanup();
-    return 0;
+    (void)closesocket(clientSocket);
+    (void)WSACleanup();
 }
