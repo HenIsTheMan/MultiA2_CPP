@@ -7,144 +7,121 @@
 #include <winsock2.h>
 #include <conio.h>
 
-/// Link with ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
 
-#define BUFSIZE     1024
-#define PORT_NUMBER 7890
-#define IP_ADDRESS  "127.0.0.1"
+int main(const int, const char* const* const){
+    const int bufferSize = 1024;
+    const int portNumber = 7890;
+    char IPAddress[16] = "127.0.0.1"; //Dest IP Address
+    WSAData wsaData{};
+    SOCKET mySocket = 0;
+    SOCKADDR_IN serverAddress{};
+    fd_set readFDS{};
+    fd_set tempFDS{};
+    TIMEVAL timeout{};
+    char msgBuffer[bufferSize]{};
+    int msgLen = 0;
+    int result = 0;
 
-int main(int argc, char **argv)
-{
-    int          Port = PORT_NUMBER;
-    char         IPAddress[16] = IP_ADDRESS;
-    WSADATA      WsaData;
-    SOCKET       ConnectSocket;
-    SOCKADDR_IN  ServerAddr;
-
-    int          ClientLen = sizeof(SOCKADDR_IN);
-
-    fd_set       ReadFds, TempFds;
-    TIMEVAL      Timeout; // struct timeval timeout;
-
-    char         Message[BUFSIZE];
-    int          MessageLen;
-    int          Return;
-
-    printf("Destination IP Address [%s], Port number [%d]\n", IPAddress, Port);
-
-    if(WSAStartup(MAKEWORD(2, 2), &WsaData) != 0)
-    {
-        printf("WSAStartup() error!");
+    if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
+        (void)printf("WSAStartup() error!");
         return 1;
     }
 
-    ConnectSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if(INVALID_SOCKET == ConnectSocket)
-    {
-        printf("socket() error");
+    mySocket = socket(AF_INET, SOCK_STREAM, 0);
+    if(mySocket == INVALID_SOCKET){
+        (void)printf("socket failed with error %d\n", WSAGetLastError());
         return 1;
     }
 
-    ///----------------------
-    /// The sockaddr_in structure specifies the address family,
-    /// IP address, and port of the server to be connected to.
-    ServerAddr.sin_family      = AF_INET;
-    ServerAddr.sin_port        = htons(Port);
-    ServerAddr.sin_addr.s_addr = inet_addr(IPAddress);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(portNumber);
+    serverAddress.sin_addr.s_addr = inet_addr(IPAddress);
 
-    ///----------------------
-    /// Connect to server.
-    Return = connect(ConnectSocket, (SOCKADDR*)&ServerAddr, sizeof(ServerAddr));
-    if(Return == SOCKET_ERROR)
-    {
-        closesocket(ConnectSocket);
+    result = connect(mySocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
+    if(result == SOCKET_ERROR){
+        (void)closesocket(mySocket);
         printf("Unable to connect to server: %ld\n", WSAGetLastError());
-        WSACleanup();
+        (void)WSACleanup();
         return 1;
     }
 
-    FD_ZERO(&ReadFds);
-    FD_SET(ConnectSocket, &ReadFds);
+    FD_ZERO(&readFDS);
+    FD_SET(mySocket, &readFDS);
 
+    (void)printf("[I/O multiplexing client] Enter msg: ");
+    memset(msgBuffer, '\0', bufferSize);
 
-    printf("enter messages : ");
-    memset(Message, '\0', BUFSIZE);
-    MessageLen = 0;
-    while(1)
-    {
-        if(_kbhit())
-        { // To check keyboard input.
-            Message[MessageLen] = _getch();
-            if(('\n' == Message[MessageLen]) || ('\r' == Message[MessageLen]))
-            { // Send the message to server.
-                putchar('\n');
-                MessageLen++;
-                Message[MessageLen] = '\0';
+    for(;;){
+        if(_kbhit()){
+            msgBuffer[msgLen] = _getch();
 
-                Return = send(ConnectSocket, Message, MessageLen, 0);
-                if(Return == SOCKET_ERROR)
-                {
-                    printf("send failed: %d\n", WSAGetLastError());
-                    closesocket(ConnectSocket);
-                    WSACleanup();
+            if(msgBuffer[msgLen] == '\n' || msgBuffer[msgLen] == '\r'){
+                (int)putchar('\n');
+                msgBuffer[++msgLen] = '\0';
+
+                result = send(mySocket, msgBuffer, msgLen, 0);
+                if(result == SOCKET_ERROR){
+                    (void)printf("send failed with error %d\n", WSAGetLastError());
+                    (void)closesocket(mySocket);
+                    (void)WSACleanup();
                     return 1;
                 }
-                printf("Bytes Sent: %ld\n", Return);
+                (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n",
+                    msgBuffer,
+                    serverAddress.sin_addr.S_un.S_un_b.s_b1,
+                    serverAddress.sin_addr.S_un.S_un_b.s_b2,
+                    serverAddress.sin_addr.S_un.S_un_b.s_b3,
+                    serverAddress.sin_addr.S_un.S_un_b.s_b4,
+                    ntohs(serverAddress.sin_port),
+                    result
+                );
 
-                MessageLen = 0;
-                memset(Message, '\0', BUFSIZE);
+                msgLen = 0;
+                memset(msgBuffer, '\0', bufferSize);
+            } else{
+                putchar(msgBuffer[msgLen++]);
             }
-            else
-            {
-                putchar(Message[MessageLen]);
-                MessageLen++;
-            }
-        }
-        else
-        {
-            TempFds = ReadFds;
-            Timeout.tv_sec = 0;
-            Timeout.tv_usec = 1000;
+        } else{
+            tempFDS = readFDS;
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 1000;
 
-            if(SOCKET_ERROR == (Return = select(0, &TempFds, 0, 0, &Timeout)))
-            { // Select() function returned error.
-                closesocket(ConnectSocket);
-                printf("select() error\n");
+            if((result = select(0, &tempFDS, 0, 0, &timeout)) < 0){
+                (void)closesocket(mySocket);
+                (void)printf("select() error\n");
                 return 1;
-            }
-            else if(0 > Return)
-            {
-                printf("Select returned error!\n");
-            }
-            else if(0 < Return)
-            {
-                memset(Message, '\0', BUFSIZE);
-                printf("Select Processed... Something to read\n");
-                Return = recv(ConnectSocket, Message, BUFSIZE, 0);
-                if(0 > Return)
-                { // recv() function returned error.
-                    closesocket(ConnectSocket);
-                    printf("Exceptional error :Socket Handle [%d]\n", ConnectSocket);
+            } else if(result > 0){
+                memset(msgBuffer, '\0', bufferSize);
+                (void)printf("Select Processed... Something to read\n"); //??
+
+                result = recv(mySocket, msgBuffer, bufferSize, 0);
+                if(result < 0){
+                    (void)closesocket(mySocket);
+                    (void)printf("Exceptional error: Socket Handle [%llu]\n", mySocket);
                     return 1;
-                }
-                else if(0 == Return)
-                { // Connection closed message has arrived.
-                    closesocket(ConnectSocket);
-                    printf("Connection closed :Socket Handle [%d]\n", ConnectSocket);
+                } else if(result == 0){ //Connection closed, msg has arrived
+                    (void)closesocket(mySocket);
+                    (void)printf("Connection closed: Socket Handle [%llu]\n", mySocket);
                     return 0;
-                }
-                else
-                { // Message received.
-                    printf("Bytes received   : %d\n", Return);
-                    printf("Message received : %s\n", Message);
-                    printf("enter messages : ");
+                } else{
+                    (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+                        msgBuffer,
+                        serverAddress.sin_addr.S_un.S_un_b.s_b1,
+                        serverAddress.sin_addr.S_un.S_un_b.s_b2,
+                        serverAddress.sin_addr.S_un.S_un_b.s_b3,
+                        serverAddress.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(serverAddress.sin_port),
+                        result
+                    );
+
+                    (void)printf("[I/O multiplexing client] Enter msg: "); //??
                 }
             }
         }
     }
 
-    closesocket(ConnectSocket);
+    closesocket(mySocket);
     WSACleanup();
     return 0;
 }
