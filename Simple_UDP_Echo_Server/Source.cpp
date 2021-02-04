@@ -1,29 +1,22 @@
-//------------------------------
-// Lab01. Exercise5
-// Simple UDP/IP Echo Server
-// Filename : simple_udp_echo_server.cpp
-
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
 #endif
 
 #include <winsock2.h>
 #include <stdio.h>
 
-/// Link with ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
 
-#define DEFAULT_BUFLEN 1024
-#define PORT_NUMBER    9876
+int main(const int, const char* const* const){
+    const int bufferLen = 1024;
+    const int portNumber = 9876;
 
-int main(void)
-{
     WSADATA     wsaData;
     SOCKET      RecvSocket;
     SOCKADDR_IN RecvAddr;
     SOCKADDR_IN SenderAddr;
     int         SenderAddrSize;
-    char        RecvBuf[DEFAULT_BUFLEN];
+    char        RecvBuf[bufferLen];
     int         MessageDataLen;
     int         iResult;
 
@@ -49,7 +42,7 @@ int main(void)
     ///-----------------------------------------------
     /// 3. Bind the socket to any address and the specified port.
     RecvAddr.sin_family      = AF_INET;
-    RecvAddr.sin_port        = htons(PORT_NUMBER);
+    RecvAddr.sin_port        = htons(portNumber);
     RecvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     iResult = bind( RecvSocket, (SOCKADDR *)& RecvAddr, sizeof (RecvAddr) );
@@ -66,9 +59,9 @@ int main(void)
         ///-----------------------------------------------
         /// 4. Call the recvfrom function to receive datagrams on the bound socket.
         printf("Receiving datagrams...\n");
-        memset(RecvBuf, '\0', DEFAULT_BUFLEN);
+        memset(RecvBuf, '\0', bufferLen);
         SenderAddrSize = sizeof(SenderAddr);
-        iResult = recvfrom( RecvSocket, RecvBuf, DEFAULT_BUFLEN, 0,
+        iResult = recvfrom( RecvSocket, RecvBuf, bufferLen, 0,
             (SOCKADDR *)&SenderAddr, &SenderAddrSize );
         if( SOCKET_ERROR == iResult )
         {
