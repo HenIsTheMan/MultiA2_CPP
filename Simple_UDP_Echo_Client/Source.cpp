@@ -61,7 +61,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        result = recvfrom(mySocket, msgBuffer, bufferLen, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress); //Receive datagrams
+        result = recvfrom(mySocket, msgBuffer, bufferLen, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress); //Receive a datagram
         if(result == SOCKET_ERROR){
             (void)printf("recvfrom failed with error %d\n", WSAGetLastError());
             break;
@@ -70,7 +70,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        printf("\"%s\" (from %d.%d.%d.%d: %d, read bytes: %d)\n\n",
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, read bytes: %d)\n\n",
             msgBuffer,
             senderAddress.sin_addr.S_un.S_un_b.s_b1,
             senderAddress.sin_addr.S_un.S_un_b.s_b2,
@@ -83,7 +83,7 @@ int main(const int, const char* const* const){
 
     result = closesocket(mySocket);
     if(result == SOCKET_ERROR){
-        printf("closesocket failed with error %d\n", WSAGetLastError());
+        (void)printf("closesocket failed with error %d\n", WSAGetLastError());
         return 1;
     }
 

@@ -38,8 +38,8 @@ int main(const int, const char* const* const){
     result = bind(mySocket, (SOCKADDR*)&receiverAddress, sizeof(receiverAddress));
     if(result != 0){
         (void)printf("bind failed with error %d\n", WSAGetLastError());
-        closesocket(mySocket);
-        WSACleanup();
+        (void)closesocket(mySocket);
+        (void)WSACleanup();
         return 1;
     }
 
@@ -47,61 +47,42 @@ int main(const int, const char* const* const){
         printf("[UDP Echo Server] Waiting for datagrams...\n");
         memset(msgBuffer, '\0', bufferLen);
 
-        result = recvfrom(mySocket, msgBuffer, bufferLen, 0,
-            (SOCKADDR*)&senderAddress, &sizeOfSenderAddress);
-        if( SOCKET_ERROR == result )
-        {
-            printf("recvfrom failed with error %d\n", WSAGetLastError());
+        result = recvfrom(mySocket, msgBuffer, bufferLen, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress);
+        if(result == SOCKET_ERROR){
+            (void)printf("recvfrom failed with error %d\n", WSAGetLastError());
             break;
-        }
-        else if( 0 == result )
-        {
-            printf("Connection closed");
+        } else if(result == 0){
+            (void)printf("Connection closed");
             break;
         }
 
-        printf("Read bytes = %d, Message = [%s], from %d.%d.%d.%d:%d\n",
-            result, msgBuffer,
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, read bytes: %d)\n\n",
+            msgBuffer,
             senderAddress.sin_addr.S_un.S_un_b.s_b1,
             senderAddress.sin_addr.S_un.S_un_b.s_b2,
             senderAddress.sin_addr.S_un.S_un_b.s_b3,
             senderAddress.sin_addr.S_un.S_un_b.s_b4,
-            ntohs(senderAddress.sin_port));
+            ntohs(senderAddress.sin_port),
+            result
+        );
 
-        ///---------------------------------------------
-        /// Send a datagram to the receiver
-        printf("Sending a datagram to the receiver...\n");
-        result = sendto( mySocket, msgBuffer, result, 0,
-            (SOCKADDR *)&senderAddress, sizeof(senderAddress) );
-        if( SOCKET_ERROR == result )
-        {
-            wprintf(L"sendto failed with error %d\n", WSAGetLastError());
+        result = sendto(mySocket, msgBuffer, result, 0, (SOCKADDR*)&senderAddress, sizeof(senderAddress));
+        if(result == SOCKET_ERROR){
+            (void)printf("sendto failed with error %d\n", WSAGetLastError());
             break;
         }
     }
 
-    ///-----------------------------------------------
-    /// 5. Close the socket when finished receiving datagrams
-    if(SOCKET_ERROR == result)
-    {
-        closesocket( mySocket );
-        WSACleanup();
+    if(result == SOCKET_ERROR){
+        (void)closesocket(mySocket);
+        (void)WSACleanup();
         return 1;
-    }
-    else
-    {
-        printf("Finished receiving. Closing socket.\n");
-        result = closesocket( mySocket );
-        if( SOCKET_ERROR == result )
-        {
-            printf("closesocket failed with error %d\n", WSAGetLastError());
+    } else{
+        result = closesocket(mySocket);
+        if(result == SOCKET_ERROR){
+            (void)printf("closesocket failed with error %d\n", WSAGetLastError());
             return 1;
         }
+        (void)WSACleanup();
     }
-
-    ///-----------------------------------------------
-    /// Clean up and exit.
-    printf("Exiting.\n");
-    WSACleanup();
-    return 0;
 }
