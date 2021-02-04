@@ -26,7 +26,7 @@ int main(const int, const char* const* const){
     int sizeOfSenderAddress = sizeof(senderAddress);
 
     result = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if(result != NO_ERROR){ //Init Winsock
+    if(result != NO_ERROR){
         (void)printf("WSAStartup failed with error %d\n", result);
         return 1;
     }
@@ -57,7 +57,7 @@ int main(const int, const char* const* const){
 
         result = sendto(mySocket, msgBuffer, msgSize, 0, (SOCKADDR*)&receiverAddress, sizeof(receiverAddress)); //Send a datagram
         if(result == SOCKET_ERROR){
-            (void)printf("sendto failed with error: %d\n", WSAGetLastError());
+            (void)printf("sendto failed with error %d\n", WSAGetLastError());
             break;
         }
 
@@ -83,7 +83,7 @@ int main(const int, const char* const* const){
 
     result = closesocket(mySocket);
     if(result == SOCKET_ERROR){
-        printf("closesocket failed with error: %d\n", WSAGetLastError());
+        printf("closesocket failed with error %d\n", WSAGetLastError());
         return 1;
     }
 

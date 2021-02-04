@@ -19,47 +19,36 @@ int main(const int, const char* const* const){
     int result = 0;
     int sizeOfSenderAddress = sizeof(senderAddress);
 
-    result = WSAStartup( MAKEWORD(2, 2), &wsaData );
-    if( NO_ERROR != result )
-    {
-        printf("WSAStartup failed with error %d\n", result);
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if(result != NO_ERROR){
+        (void)printf("WSAStartup failed with error %d\n", result);
         return 1;
     }
 
-    ///-----------------------------------------------
-    /// 2. Create a receiver socket to receive datagrams
-    mySocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-    if( INVALID_SOCKET == mySocket )
-    {
-        printf("socket failed with error %d\n", WSAGetLastError());
-        WSACleanup();
+    mySocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(mySocket == INVALID_SOCKET){
+        (void)printf("socket failed with error %d\n", WSAGetLastError());
         return 1;
     }
 
-    ///-----------------------------------------------
-    /// 3. Bind the socket to any address and the specified port.
-    receiverAddress.sin_family      = AF_INET;
-    receiverAddress.sin_port        = htons(portNumber);
+    receiverAddress.sin_family = AF_INET;
+    receiverAddress.sin_port = htons(portNumber);
     receiverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    result = bind( mySocket, (SOCKADDR *)& receiverAddress, sizeof (receiverAddress) );
-    if( 0 != result )
-    {
-        printf("bind failed with error %d\n", WSAGetLastError());
+    result = bind(mySocket, (SOCKADDR*)&receiverAddress, sizeof(receiverAddress));
+    if(result != 0){
+        (void)printf("bind failed with error %d\n", WSAGetLastError());
         closesocket(mySocket);
         WSACleanup();
         return 1;
     }
 
-    while(1)
-    {
-        ///-----------------------------------------------
-        /// 4. Call the recvfrom function to receive datagrams on the bound socket.
-        printf("Receiving datagrams...\n");
+    for(;;){
+        printf("[UDP Echo Server] Waiting for datagrams...\n");
         memset(msgBuffer, '\0', bufferLen);
 
-        result = recvfrom( mySocket, msgBuffer, bufferLen, 0,
-            (SOCKADDR *)&senderAddress, &sizeOfSenderAddress );
+        result = recvfrom(mySocket, msgBuffer, bufferLen, 0,
+            (SOCKADDR*)&senderAddress, &sizeOfSenderAddress);
         if( SOCKET_ERROR == result )
         {
             printf("recvfrom failed with error %d\n", WSAGetLastError());
@@ -86,7 +75,7 @@ int main(const int, const char* const* const){
             (SOCKADDR *)&senderAddress, sizeof(senderAddress) );
         if( SOCKET_ERROR == result )
         {
-            wprintf(L"sendto failed with error: %d\n", WSAGetLastError());
+            wprintf(L"sendto failed with error %d\n", WSAGetLastError());
             break;
         }
     }
