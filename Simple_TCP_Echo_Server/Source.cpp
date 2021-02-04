@@ -75,6 +75,7 @@ int main(const int, const char* const* const){
     for(;;){
         memset(msgBuffer, '\0', bufferLen);
         result = recv(clientSocket, msgBuffer, bufferLen, 0);
+        //result = recv(clientSocket, msgBuffer, 2, 0);
 
         if(result > 0){
             (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
