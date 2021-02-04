@@ -56,7 +56,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, read bytes: %d)\n\n",
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
             msgBuffer,
             senderAddress.sin_addr.S_un.S_un_b.s_b1,
             senderAddress.sin_addr.S_un.S_un_b.s_b2,

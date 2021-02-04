@@ -17,7 +17,7 @@ int main(const int, const char* const* const){
     sockaddr_in serverAddress{};
     sockaddr_in clientAddress{};
     char msgBuffer[bufferLen]{};
-    int  clientAddressLen; // Length for client sockaddr_in.
+    int sizeOfClientAddress = sizeof(clientAddress);
     int result = 0;
 
     result = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -26,24 +26,15 @@ int main(const int, const char* const* const){
         return 1;
     }
 
-    ///----------------------
-    /// 2. Create a new socket for application 
     serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(INVALID_SOCKET == serverSocket)
-    {
-        printf("socket function failed with error: %u\n", WSAGetLastError());
-        WSACleanup();
+    if(serverSocket == INVALID_SOCKET){
+        (void)printf("socket failed with error %d\n", WSAGetLastError());
+        (void)WSACleanup();
         return 1;
-    } else
-    {
-        printf("socket creation success.\n");
     }
 
-    ///----------------------
-    /// 3-1. The sockaddr_in structure specifies the address family,
-    ///      IP address, and port for the socket that is being bound.
     serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(DEFAULT_PORT);
+    serverAddress.sin_port = htons(portNumber);
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
     ///----------------------
@@ -74,9 +65,8 @@ int main(const int, const char* const* const){
     printf("Waiting for client to connect...\n");
     ///----------------------
     /// 5. Permits an incoming connection attempt on a socket
-    clientAddressLen = sizeof(clientAddress);
     connectedSocket = accept(serverSocket, (struct sockaddr*)&clientAddress,
-        &clientAddressLen);
+        &sizeOfClientAddress);
     if(INVALID_SOCKET == connectedSocket)
     {
         printf("accept failed with error: %ld\n", WSAGetLastError());
