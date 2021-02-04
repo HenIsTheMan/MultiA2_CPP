@@ -16,8 +16,8 @@ int main(const int, const char* const* const){
     const char* const serverIPAddress = "127.0.0.1";
     const int portNumber = 9876;
 
-    WSADATA wsaData;
-    SOCKET mySocket;
+    WSADATA wsaData{};
+    SOCKET mySocket = 0;
     SOCKADDR_IN receiverAddress{};
     SOCKADDR_IN senderAddress{};
     char msgBuffer[bufferLen]{};

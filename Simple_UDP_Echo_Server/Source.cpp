@@ -11,28 +11,25 @@ int main(const int, const char* const* const){
     const int bufferLen = 1024;
     const int portNumber = 9876;
 
-    WSADATA     wsaData;
-    SOCKET      RecvSocket;
-    SOCKADDR_IN RecvAddr;
-    SOCKADDR_IN SenderAddr;
-    int         SenderAddrSize;
-    char        RecvBuf[bufferLen];
-    int         MessageDataLen;
-    int         iResult;
+    WSADATA wsaData{};
+    SOCKET mySocket = 0;
+    SOCKADDR_IN receiverAddress{};
+    SOCKADDR_IN senderAddress{};
+    char msgBuffer[bufferLen]{};
+    int result = 0;
+    int sizeOfSenderAddress = sizeof(senderAddress);
 
-    ///-----------------------------------------------
-    /// 1. Initialize Winsock
-    iResult = WSAStartup( MAKEWORD(2, 2), &wsaData );
-    if( NO_ERROR != iResult )
+    result = WSAStartup( MAKEWORD(2, 2), &wsaData );
+    if( NO_ERROR != result )
     {
-        printf("WSAStartup failed with error %d\n", iResult);
+        printf("WSAStartup failed with error %d\n", result);
         return 1;
     }
 
     ///-----------------------------------------------
     /// 2. Create a receiver socket to receive datagrams
-    RecvSocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-    if( INVALID_SOCKET == RecvSocket )
+    mySocket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+    if( INVALID_SOCKET == mySocket )
     {
         printf("socket failed with error %d\n", WSAGetLastError());
         WSACleanup();
@@ -41,15 +38,15 @@ int main(const int, const char* const* const){
 
     ///-----------------------------------------------
     /// 3. Bind the socket to any address and the specified port.
-    RecvAddr.sin_family      = AF_INET;
-    RecvAddr.sin_port        = htons(portNumber);
-    RecvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    receiverAddress.sin_family      = AF_INET;
+    receiverAddress.sin_port        = htons(portNumber);
+    receiverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    iResult = bind( RecvSocket, (SOCKADDR *)& RecvAddr, sizeof (RecvAddr) );
-    if( 0 != iResult )
+    result = bind( mySocket, (SOCKADDR *)& receiverAddress, sizeof (receiverAddress) );
+    if( 0 != result )
     {
         printf("bind failed with error %d\n", WSAGetLastError());
-        closesocket(RecvSocket);
+        closesocket(mySocket);
         WSACleanup();
         return 1;
     }
@@ -59,37 +56,35 @@ int main(const int, const char* const* const){
         ///-----------------------------------------------
         /// 4. Call the recvfrom function to receive datagrams on the bound socket.
         printf("Receiving datagrams...\n");
-        memset(RecvBuf, '\0', bufferLen);
-        SenderAddrSize = sizeof(SenderAddr);
-        iResult = recvfrom( RecvSocket, RecvBuf, bufferLen, 0,
-            (SOCKADDR *)&SenderAddr, &SenderAddrSize );
-        if( SOCKET_ERROR == iResult )
+        memset(msgBuffer, '\0', bufferLen);
+
+        result = recvfrom( mySocket, msgBuffer, bufferLen, 0,
+            (SOCKADDR *)&senderAddress, &sizeOfSenderAddress );
+        if( SOCKET_ERROR == result )
         {
             printf("recvfrom failed with error %d\n", WSAGetLastError());
             break;
         }
-        else if( 0 == iResult )
+        else if( 0 == result )
         {
             printf("Connection closed");
             break;
         }
 
         printf("Read bytes = %d, Message = [%s], from %d.%d.%d.%d:%d\n",
-            iResult, RecvBuf,
-            SenderAddr.sin_addr.S_un.S_un_b.s_b1,
-            SenderAddr.sin_addr.S_un.S_un_b.s_b2,
-            SenderAddr.sin_addr.S_un.S_un_b.s_b3,
-            SenderAddr.sin_addr.S_un.S_un_b.s_b4,
-            ntohs(SenderAddr.sin_port));
-
-        MessageDataLen = iResult;
+            result, msgBuffer,
+            senderAddress.sin_addr.S_un.S_un_b.s_b1,
+            senderAddress.sin_addr.S_un.S_un_b.s_b2,
+            senderAddress.sin_addr.S_un.S_un_b.s_b3,
+            senderAddress.sin_addr.S_un.S_un_b.s_b4,
+            ntohs(senderAddress.sin_port));
 
         ///---------------------------------------------
         /// Send a datagram to the receiver
         printf("Sending a datagram to the receiver...\n");
-        iResult = sendto( RecvSocket, RecvBuf, MessageDataLen, 0,
-            (SOCKADDR *)&SenderAddr, sizeof(SenderAddr) );
-        if( SOCKET_ERROR == iResult )
+        result = sendto( mySocket, msgBuffer, result, 0,
+            (SOCKADDR *)&senderAddress, sizeof(senderAddress) );
+        if( SOCKET_ERROR == result )
         {
             wprintf(L"sendto failed with error: %d\n", WSAGetLastError());
             break;
@@ -98,17 +93,17 @@ int main(const int, const char* const* const){
 
     ///-----------------------------------------------
     /// 5. Close the socket when finished receiving datagrams
-    if(SOCKET_ERROR == iResult)
+    if(SOCKET_ERROR == result)
     {
-        closesocket( RecvSocket );
+        closesocket( mySocket );
         WSACleanup();
         return 1;
     }
     else
     {
         printf("Finished receiving. Closing socket.\n");
-        iResult = closesocket( RecvSocket );
-        if( SOCKET_ERROR == iResult )
+        result = closesocket( mySocket );
+        if( SOCKET_ERROR == result )
         {
             printf("closesocket failed with error %d\n", WSAGetLastError());
             return 1;
