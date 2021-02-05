@@ -23,7 +23,7 @@ int main(const int argc, const char* const* const argv){
     if(argc == 2){
         portNumber = atoi(argv[1]);
     }
-    (void)printf("[I/O multiplexing server] Waiting for clients to connect...\n");
+    (void)printf("[I/O multiplexing server] Waiting for clients to connect...\n\n");
 
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
         (void)printf("WSAStartup() error!");
@@ -53,6 +53,8 @@ int main(const int argc, const char* const* const argv){
     FD_ZERO(&readFDS);
     FD_SET(serverSocket, &readFDS);
 
+    static int timeoutCounter = 0;
+
     for(;;){
         tempFDS = readFDS;
         timeout.tv_sec = 5;
@@ -64,10 +66,16 @@ int main(const int argc, const char* const* const argv){
         }
 
         if(result == 0){
-            (void)printf("select() returned by timeout.\n");
+            if(timeoutCounter > 0){
+                (void)printf("\033[A\033[A\33[2K");
+            }
+            (void)printf("select() returned by timeout (%d)\n\n", ++timeoutCounter);
         } else if(result < 0){
+            timeoutCounter = 0;
             (void)printf("select() error\n");
         } else{
+            timeoutCounter = 0;
+
             for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                 SOCKET& currSocket = tempFDS.fd_array[i];
 
@@ -81,21 +89,53 @@ int main(const int argc, const char* const* const argv){
                     }
 
                     FD_SET(clientSocket, &readFDS);
-                    (void)printf("\nClient connected: Socket Handle [%llu]\n\n", clientSocket);
+                    (void)printf("Client connected: Socket Handle [%llu]\n\n", clientSocket);
                 } else{
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
                     if(result == 0){ //Connection closed, msg has arrived
+                        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                            msgBuffer,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(clientAddress.sin_port),
+                            result
+                        );
+
                         (void)closesocket(currSocket);
+
                         (void)printf("Connection closed: Socket Handle [%llu]\n", currSocket);
+
                         FD_CLR(currSocket, &readFDS);
                     } else if(result < 0){
                         (void)closesocket(currSocket);
 
-                        (void)printf("\nClient disconnected: Socket Handle [%llu]\n\n", clientSocket);
+                        (void)printf("Client disconnected: Socket Handle [%llu]\n\n", clientSocket);
 
                         FD_CLR(currSocket, &readFDS);
                     } else{
+                        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                            msgBuffer,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(clientAddress.sin_port),
+                            result
+                        );
+
                         result = send(currSocket, msgBuffer, result, 0);
+
+                        (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
+                            msgBuffer,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                            clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(clientAddress.sin_port),
+                            result
+                        );
                     }
                 }
             }
