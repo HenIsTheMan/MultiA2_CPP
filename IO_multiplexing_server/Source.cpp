@@ -68,7 +68,9 @@ int main(const int argc, const char* const* const argv){
             (void)printf("select() error\n");
         } else{
             for(int i = 0; i < (int)tempFDS.fd_count; ++i){
-                if(tempFDS.fd_array[i] == serverSocket){
+                SOCKET& currSocket = tempFDS.fd_array[i];
+
+                if(currSocket == serverSocket){
                     clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &sizeOfClientAddress);
                     if(clientSocket == INVALID_SOCKET){
                         (void)printf("accept failed with error %ld\n", WSAGetLastError());
@@ -80,17 +82,17 @@ int main(const int argc, const char* const* const argv){
                     FD_SET(clientSocket, &readFDS);
                     (void)printf("New client accepted: Socket Handle [%llu]\n", clientSocket);
                 } else{
-                    result = recv(tempFDS.fd_array[i], msgBuffer, bufferSize, 0);
+                    result = recv(currSocket, msgBuffer, bufferSize, 0);
                     if(result == 0){ //Connection closed, msg has arrived
-                        (void)closesocket(tempFDS.fd_array[i]);
-                        (void)printf("Connection closed: Socket Handle [%llu]\n", tempFDS.fd_array[i]);
-                        FD_CLR(tempFDS.fd_array[i], &readFDS);
+                        (void)closesocket(currSocket);
+                        (void)printf("Connection closed: Socket Handle [%llu]\n", currSocket);
+                        FD_CLR(currSocket, &readFDS);
                     } else if(result < 0){
-                        (void)closesocket(tempFDS.fd_array[i]);
-                        (void)printf("Err: Socket Handle [%llu]\n", tempFDS.fd_array[i]);
-                        FD_CLR(tempFDS.fd_array[i], &readFDS);
+                        (void)closesocket(currSocket);
+                        (void)printf("Err: Socket Handle [%llu]\n", currSocket);
+                        FD_CLR(currSocket, &readFDS);
                     } else{
-                        result = send(tempFDS.fd_array[i], msgBuffer, result, 0);
+                        result = send(currSocket, msgBuffer, result, 0);
                     }
                 }
             }
