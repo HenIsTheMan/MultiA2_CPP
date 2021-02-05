@@ -61,6 +61,16 @@ int main(const int, const char* const* const){
             break;
         }
 
+        (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes read: %d)\n",
+            msgBuffer,
+            receiverAddress.sin_addr.S_un.S_un_b.s_b1,
+            receiverAddress.sin_addr.S_un.S_un_b.s_b2,
+            receiverAddress.sin_addr.S_un.S_un_b.s_b3,
+            receiverAddress.sin_addr.S_un.S_un_b.s_b4,
+            ntohs(receiverAddress.sin_port),
+            result
+        );
+
         result = recvfrom(mySocket, msgBuffer, bufferSize, 0, (SOCKADDR*)&senderAddress, &sizeOfSenderAddress); //Receive a datagram
         if(result == SOCKET_ERROR){
             (void)printf("recvfrom failed with error %d\n", WSAGetLastError());
@@ -70,7 +80,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
             msgBuffer,
             senderAddress.sin_addr.S_un.S_un_b.s_b1,
             senderAddress.sin_addr.S_un.S_un_b.s_b2,
