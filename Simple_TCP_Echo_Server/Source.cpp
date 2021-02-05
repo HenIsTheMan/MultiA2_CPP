@@ -109,10 +109,6 @@ int main(const int, const char* const* const){
                     ntohs(clientAddress.sin_port),
                     result
                 );
-
-                char customMsgBuffer[] = "Command received :)";
-                const size_t customMsgBufferSize = sizeof(customMsgBuffer) / sizeof(customMsgBuffer[0]);
-                result = send(clientSocket, customMsgBuffer, customMsgBufferSize, 0);
             } else{
                 (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
                     msgBuffer,
@@ -123,10 +119,6 @@ int main(const int, const char* const* const){
                     ntohs(clientAddress.sin_port),
                     result
                 );
-
-                char customMsgBuffer[] = "Msg received :)";
-                const size_t customMsgBufferSize = sizeof(customMsgBuffer) / sizeof(customMsgBuffer[0]);
-                result = send(clientSocket, customMsgBuffer, customMsgBufferSize, 0);
             }
         } else if(result == SOCKET_ERROR){
             (void)system("cls");
@@ -156,7 +148,7 @@ int main(const int, const char* const* const){
             );
             continue;
         } else{
-            (void)printf("Sent \"%s\" back (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
+            (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
                 msgBuffer,
                 clientAddress.sin_addr.S_un.S_un_b.s_b1,
                 clientAddress.sin_addr.S_un.S_un_b.s_b2,
