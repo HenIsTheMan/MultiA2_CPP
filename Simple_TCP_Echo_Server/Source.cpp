@@ -57,7 +57,7 @@ int main(const int, const char* const* const){
     result = SOCKET_ERROR;
 
     for(;;){
-        if(result == SOCKET_ERROR){
+        if(result <= 0){
             clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &sizeOfClientAddress);
             if(clientSocket == INVALID_SOCKET){
                 (void)printf("accept failed with error %ld\n", WSAGetLastError());
@@ -120,7 +120,7 @@ int main(const int, const char* const* const){
                     result
                 );
             }
-        } else if(result == SOCKET_ERROR){
+        } else{
             (void)system("cls");
             (void)printf("Client (%d.%d.%d.%d: %d) disconnected...\n\n",
                 clientAddress.sin_addr.S_un.S_un_b.s_b1,
@@ -129,13 +129,23 @@ int main(const int, const char* const* const){
                 clientAddress.sin_addr.S_un.S_un_b.s_b4,
                 ntohs(clientAddress.sin_port)
             );
+
+            //result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
             continue;
-        } else{
-            result == 0 ? (void)printf("Connection closed\n") : (void)printf("recv failed with error %d\n", WSAGetLastError());
         }
 
         result = send(clientSocket, msgBuffer, result, 0);
-        if(result == SOCKET_ERROR){
+        if(result > 0){
+            (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
+                msgBuffer,
+                clientAddress.sin_addr.S_un.S_un_b.s_b1,
+                clientAddress.sin_addr.S_un.S_un_b.s_b2,
+                clientAddress.sin_addr.S_un.S_un_b.s_b3,
+                clientAddress.sin_addr.S_un.S_un_b.s_b4,
+                ntohs(clientAddress.sin_port),
+                result
+            );
+        } else{
             //(void)printf("send failed with error %d\n", WSAGetLastError());
             //break;
             (void)system("cls");
@@ -147,16 +157,6 @@ int main(const int, const char* const* const){
                 ntohs(clientAddress.sin_port)
             );
             continue;
-        } else{
-            (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
-                msgBuffer,
-                clientAddress.sin_addr.S_un.S_un_b.s_b1,
-                clientAddress.sin_addr.S_un.S_un_b.s_b2,
-                clientAddress.sin_addr.S_un.S_un_b.s_b3,
-                clientAddress.sin_addr.S_un.S_un_b.s_b4,
-                ntohs(clientAddress.sin_port),
-                result
-            );
         }
     }
 
