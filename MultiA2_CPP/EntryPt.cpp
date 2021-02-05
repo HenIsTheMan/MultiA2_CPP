@@ -2,7 +2,7 @@
 
 int main(const int argc, const char* const* const argv){
     const int bufferSize = 1024;
-    int portNumber = 7890; //Server's port no.
+    int portNumber = 7890;
 
     WSAData wsaData{};
     SOCKET clientSocket = 0;
