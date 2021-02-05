@@ -2,12 +2,13 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Core.hpp" />
-    <ClInclude Include="Winsock\Winsock.hpp" />
     <ClInclude Include="Winsock\Server\Server.hpp" />
     <ClInclude Include="Winsock\Client\Client.hpp" />
+    <ClInclude Include="Winsock\Winsock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPt.cpp" />
+    <ClCompile Include="Winsock\Winsock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

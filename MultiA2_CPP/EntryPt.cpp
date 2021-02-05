@@ -1,23 +1,7 @@
-#include "Winsock/Winsock.hpp"
+#include "Winsock/Winsock.h"
 
 int main(const int argc, const char* const* const argv){
-    const int bufferSize = 1024;
-
-    WSAData wsaData{};
-    SOCKET clientSocket = 0;
-    SOCKET serverSocket = 0;
-    SOCKADDR_IN clientAddress{};
-    SOCKADDR_IN serverAddress{};
-    int sizeOfClientAddress = sizeof(SOCKADDR_IN);
-    fd_set readFDS{};
-    fd_set tempFDS{};
-    TIMEVAL timeout{};
-    char msgBuffer[bufferSize]{};
-    int result = 0;
-
-    if(argc == 2){
-        portNumber = atoi(argv[1]);
-    }
+    
     (void)printf("[I/O multiplexing server] Waiting for clients to connect...\n\n");
 
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){

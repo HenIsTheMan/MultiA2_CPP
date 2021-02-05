@@ -13,6 +13,8 @@
 		~__VA_ARGS__() = default;
 #endif
 
+#include <vector>
+
 #include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
