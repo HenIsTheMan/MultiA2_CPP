@@ -85,13 +85,22 @@ int main(const int argc, const char* const* const argv){
                     }
 
                     FD_SET(clientSocket, &readFDS);
-                    (void)printf("Client connected: Socket Handle [%llu]\n\n", clientSocket);
+
+                    #if _WIN64
+                        (void)printf("Client connected: Socket Handle [%llu]\n\n", clientSocket);
+                    #else
+                        (void)printf("Client connected: Socket Handle [%u]\n\n", clientSocket);
+                    #endif
                 } else{
                     memset(msgBuffer, '\0', bufferSize);
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
 
                     if(result <= 0){
-                        (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
+                        #if _WIN64
+                            (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
+                        #else
+                            (void)printf("Client disconnected: Socket Handle [%u]\n\n", currSocket);
+                        #endif
 
                         (void)closesocket(currSocket);
 
