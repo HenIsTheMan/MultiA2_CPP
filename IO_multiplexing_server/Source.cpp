@@ -80,7 +80,7 @@ int main(const int argc, const char* const* const argv){
                     }
 
                     FD_SET(clientSocket, &readFDS);
-                    (void)printf("New client accepted: Socket Handle [%llu]\n", clientSocket);
+                    (void)printf("\nNew client accepted: Socket Handle [%llu]\n\n", clientSocket);
                 } else{
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
                     if(result == 0){ //Connection closed, msg has arrived
@@ -89,7 +89,7 @@ int main(const int argc, const char* const* const argv){
                         FD_CLR(currSocket, &readFDS);
                     } else if(result < 0){
                         (void)closesocket(currSocket);
-                        (void)printf("Err: Socket Handle [%llu]\n", currSocket);
+                        (void)printf("Err: Socket Handle [%llu]\n", currSocket); //Client dc??
                         FD_CLR(currSocket, &readFDS);
                     } else{
                         result = send(currSocket, msgBuffer, result, 0);
