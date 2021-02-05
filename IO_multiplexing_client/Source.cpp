@@ -54,10 +54,11 @@ int main(const int, const char* const* const){
 
     for(;;){
         if(_kbhit()){
-            msgBuffer[msgLen] = _getch();
+            const int myCh = _getch();
+            msgBuffer[msgLen] = myCh;
 
             if(msgBuffer[msgLen] == '\n' || msgBuffer[msgLen] == '\r'){
-                (int)putchar('\n');
+                (void)putchar('\n');
                 msgBuffer[msgLen++] = '\0';
 
                 result = send(mySocket, msgBuffer, msgLen, 0);
@@ -80,7 +81,14 @@ int main(const int, const char* const* const){
                 msgLen = 0;
                 memset(msgBuffer, '\0', bufferSize);
             } else{
-                putchar(msgBuffer[msgLen++]);
+                if(myCh != (int)'\b'){
+                    (void)putchar(msgBuffer[msgLen++]);
+                } else if(msgLen > 0){
+                    (void)printf("\b");
+                    (void)putchar('\0');
+                    (void)putchar('\b');
+                    --msgLen;
+                }
             }
         } else{
             tempFDS = readFDS;
