@@ -6,7 +6,7 @@
 
 int main(const int argc, const char* const* const argv){
     const int bufferSize = 1024;
-    int portNumber = 6969;
+    int portNumber = 7890;
     WSAData wsaData{};
     SOCKET clientSocket = 0;
     SOCKET serverSocket = 0;
@@ -22,7 +22,7 @@ int main(const int argc, const char* const* const argv){
     if(argc == 2){
         portNumber = atoi(argv[1]);
     }
-    printf("Using port number : [%d]\n", portNumber); //??
+    printf("[I/O multiplexing server] Port number: %d\n", portNumber);
 
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
         (void)printf("WSAStartup() error!");
@@ -78,7 +78,7 @@ int main(const int argc, const char* const* const argv){
                     }
 
                     FD_SET(clientSocket, &readFDS);
-                    (void)printf("New Client Accepted: Socket Handle [%llu]\n", clientSocket); //??
+                    (void)printf("New client accepted: Socket Handle [%llu]\n", clientSocket);
                 } else{
                     result = recv(tempFDS.fd_array[i], msgBuffer, bufferSize, 0);
                     if(result == 0){ //Connection closed, msg has arrived
