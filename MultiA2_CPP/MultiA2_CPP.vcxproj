@@ -74,21 +74,25 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Output\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Intermediate\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Output\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Intermediate\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Output\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Intermediate\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Output\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)_$(Platform)_Intermediate\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)$(ProjectName)\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
