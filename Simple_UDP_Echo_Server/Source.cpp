@@ -9,12 +9,12 @@
 
 int main(const int, const char* const* const){
     const int bufferSize = 1024;
-    const int portNumber = 9876;
+    const int portNumber = 9876; //Server's port no.
 
     WSADATA wsaData{};
     SOCKET mySocket = 0;
-    SOCKADDR_IN receiverAddress{};
-    SOCKADDR_IN senderAddress{};
+    SOCKADDR_IN receiverAddress{}; //Server's address
+    SOCKADDR_IN senderAddress{}; //Not my address
     char msgBuffer[bufferSize]{};
     int result = 0;
     int sizeOfSenderAddress = sizeof(senderAddress);
@@ -56,7 +56,7 @@ int main(const int, const char* const* const){
             break;
         }
 
-        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
             msgBuffer,
             senderAddress.sin_addr.S_un.S_un_b.s_b1,
             senderAddress.sin_addr.S_un.S_un_b.s_b2,
@@ -71,6 +71,16 @@ int main(const int, const char* const* const){
             (void)printf("sendto failed with error %d\n", WSAGetLastError());
             break;
         }
+
+        (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes read: %d)\n\n",
+            msgBuffer,
+            senderAddress.sin_addr.S_un.S_un_b.s_b1,
+            senderAddress.sin_addr.S_un.S_un_b.s_b2,
+            senderAddress.sin_addr.S_un.S_un_b.s_b3,
+            senderAddress.sin_addr.S_un.S_un_b.s_b4,
+            ntohs(senderAddress.sin_port),
+            result
+        );
     }
 
     if(result == SOCKET_ERROR){

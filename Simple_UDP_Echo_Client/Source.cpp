@@ -14,12 +14,12 @@
 int main(const int, const char* const* const){
     const int bufferSize = 1024;
     const char* const serverIPAddress = "127.0.0.1";
-    const int portNumber = 9876;
+    const int portNumber = 9876; //Server's port no.
 
     WSADATA wsaData{};
     SOCKET mySocket = 0;
-    SOCKADDR_IN receiverAddress{};
-    SOCKADDR_IN senderAddress{};
+    SOCKADDR_IN receiverAddress{}; //Server's address
+    SOCKADDR_IN senderAddress{}; //Not my address
     char msgBuffer[bufferSize]{};
     int msgSize = 0;
     int result = 0;
