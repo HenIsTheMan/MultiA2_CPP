@@ -67,7 +67,7 @@ int main(const int argc, const char* const* const argv){
         } else if(result < 0){
             (void)printf("select() error\n");
         } else{
-            for(int i = 0; i < tempFDS.fd_count; ++i){
+            for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                 if(tempFDS.fd_array[i] == serverSocket){
                     clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &sizeOfClientAddress);
                     if(clientSocket == INVALID_SOCKET){
