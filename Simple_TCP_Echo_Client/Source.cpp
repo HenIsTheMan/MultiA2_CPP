@@ -13,7 +13,7 @@
 
 int main(const int, const char* const* const){
     const int bufferSize = 1024;
-    const int portNumber = 9876;
+    const int portNumber = 9876; //Server's port no.
 
     WSADATA wsaData{};
     SOCKET clientSocket = 0;
