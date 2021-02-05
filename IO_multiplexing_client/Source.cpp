@@ -105,7 +105,7 @@ int main(const int, const char* const* const){
                 result = recv(mySocket, msgBuffer, bufferSize, 0);
                 if(result < 0){
                     (void)closesocket(mySocket);
-                    (void)printf("Exceptional error: Socket Handle [%llu]\n", mySocket);
+                    (void)printf("Err: Socket Handle [%llu]\n", mySocket);
                     return 1;
                 } else if(result == 0){ //Connection closed, msg has arrived
                     (void)closesocket(mySocket);

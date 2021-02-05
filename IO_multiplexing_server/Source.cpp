@@ -12,7 +12,7 @@ int main(const int argc, const char* const* const argv){
     SOCKET serverSocket = 0;
     SOCKADDR_IN clientAddress{};
     SOCKADDR_IN serverAddress{};
-    int clientLen = sizeof(SOCKADDR_IN);
+    int sizeOfClientAddress = sizeof(SOCKADDR_IN);
     fd_set readFDS{};
     fd_set tempFDS{};
     TIMEVAL timeout{};
@@ -65,47 +65,37 @@ int main(const int argc, const char* const* const argv){
         if(result == 0){
             (void)printf("select() returned by timeout.\n");
         } else if(result < 0){
-            printf("Select returned error!\n"); //??
-        }
-        else
-        {
-            for(int Index = 0; Index < TempFds.fd_count; Index++)
-            {
-                if(TempFds.fd_array[Index] == serverSocket)
-                { // New connection requested by new client.
-                    ClientSocket = accept(serverSocket, (SOCKADDR *)&ClientAddr,
-                        &ClientLen);
-                    FD_SET(ClientSocket, &ReadFds);
-                    printf("New Client Accepted : Socket Handle [%llu]\n",
-                        ClientSocket);
-                }
-                else
-                { // Something to read from socket.
-                    result = recv(TempFds.fd_array[Index], msgBuffer, bufferSize, 0);
-                    if(0 == result)
-                    { // Connection closed message has arrived.
-                        closesocket(TempFds.fd_array[Index]);
-                        printf("Connection closed :Socket Handle [%llu]\n",
-                            TempFds.fd_array[Index]);
-                        FD_CLR(TempFds.fd_array[Index], &ReadFds);
+            (void)printf("select() error\n");
+        } else{
+            for(int i = 0; i < tempFDS.fd_count; ++i){
+                if(tempFDS.fd_array[i] == serverSocket){
+                    clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &sizeOfClientAddress);
+                    if(clientSocket == INVALID_SOCKET){
+                        (void)printf("accept failed with error %ld\n", WSAGetLastError());
+                        (void)closesocket(serverSocket);
+                        (void)WSACleanup();
+                        return 1;
                     }
-                    else if(0 > result)
-                    { // recv() function returned error.
-                        closesocket(TempFds.fd_array[Index]);
-                        printf("Exceptional error :Socket Handle [%llu]\n",
-                            TempFds.fd_array[Index]);
-                        FD_CLR(TempFds.fd_array[Index], &ReadFds);
-                    }
-                    else
-                    { // msgBuffer recevied.
-                        send(TempFds.fd_array[Index], msgBuffer, result, 0);
+
+                    FD_SET(clientSocket, &readFDS);
+                    (void)printf("New Client Accepted: Socket Handle [%llu]\n", clientSocket); //??
+                } else{
+                    result = recv(tempFDS.fd_array[i], msgBuffer, bufferSize, 0);
+                    if(result == 0){ //Connection closed, msg has arrived
+                        (void)closesocket(tempFDS.fd_array[i]);
+                        (void)printf("Connection closed: Socket Handle [%llu]\n", tempFDS.fd_array[i]);
+                        FD_CLR(tempFDS.fd_array[i], &readFDS);
+                    } else if(result < 0){
+                        (void)closesocket(tempFDS.fd_array[i]);
+                        (void)printf("Err: Socket Handle [%llu]\n", tempFDS.fd_array[i]);
+                        FD_CLR(tempFDS.fd_array[i], &readFDS);
+                    } else{
+                        result = send(tempFDS.fd_array[i], msgBuffer, result, 0);
                     }
                 }
             }
         }
     }
 
-    WSACleanup();
-
-    return 0;
+    (void)WSACleanup();
 }
