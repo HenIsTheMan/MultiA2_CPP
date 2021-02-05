@@ -153,11 +153,12 @@
   <ItemGroup>
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Core.hpp" />
-    <ClInclude Include="Winsock\Server\Server.hpp" />
+    <ClInclude Include="Winsock\Server\Server.h" />
     <ClInclude Include="Winsock\Winsock.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPt.cpp" />
+    <ClCompile Include="Winsock\Server\Server.cpp" />
     <ClCompile Include="Winsock\Winsock.cpp" />
   </ItemGroup>
   <ItemGroup>

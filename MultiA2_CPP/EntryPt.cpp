@@ -1,13 +1,14 @@
 #include "Winsock/Winsock.h"
 
 int main(const int argc, const char* const* const argv){
-    
-    (void)printf("[I/O multiplexing server] Waiting for clients to connect...\n\n");
+    Winsock* winsock = new Winsock();
+    Winsock::InitParams params;
 
-    if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
-        (void)printf("WSAStartup() error!");
-        return 1;
+    if(argc == 2){
+        params.portNumber = atoi(argv[1]);
     }
+
+    winsock->Init(params);
 
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
     if(serverSocket == INVALID_SOCKET){
@@ -117,4 +118,9 @@ int main(const int argc, const char* const* const argv){
     }
 
     (void)WSACleanup();
+
+    if(winsock != nullptr){
+        delete winsock;
+        winsock = nullptr;
+    }
 }

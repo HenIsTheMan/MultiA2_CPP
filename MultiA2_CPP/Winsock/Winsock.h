@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Client/Client.hpp"
-#include "Server/Server.hpp"
+#include "Server/Server.h"
 
 struct Winsock final{
 	_6_DEFAULTED(Winsock)
@@ -19,15 +19,11 @@ struct Winsock final{
 	std::vector<Client*> clients;
 	std::vector<Server*> servers;
 
-	//struct InitParams final{
-	//	_6_DEFAULTED(InitParams)
+	struct InitParams final{
+		_6_DEFAULTED(InitParams)
 
+		int portNumber = -999;
+	};
 
-	//};
-
-	//void Init(const 
-
-	//if(argc == 2){
-	//	portNumber = atoi(argv[1]);
-	//}
+	void Init(const InitParams& params);
 };
