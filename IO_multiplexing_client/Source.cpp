@@ -12,7 +12,7 @@
 int main(const int, const char* const* const){
     const int bufferSize = 1024;
     const int portNumber = 7890;
-    char IPAddress[16] = "127.0.0.1"; //Dest IP Address
+    char IPAddress[16] = "127.0.0.1";
     WSAData wsaData{};
     SOCKET mySocket = 0;
     SOCKADDR_IN serverAddress{};
@@ -58,7 +58,7 @@ int main(const int, const char* const* const){
 
             if(msgBuffer[msgLen] == '\n' || msgBuffer[msgLen] == '\r'){
                 (int)putchar('\n');
-                msgBuffer[++msgLen] = '\0';
+                msgBuffer[msgLen++] = '\0';
 
                 result = send(mySocket, msgBuffer, msgLen, 0);
                 if(result == SOCKET_ERROR){
@@ -93,7 +93,6 @@ int main(const int, const char* const* const){
                 return 1;
             } else if(result > 0){
                 memset(msgBuffer, '\0', bufferSize);
-                (void)printf("Select Processed... Something to read\n"); //??
 
                 result = recv(mySocket, msgBuffer, bufferSize, 0);
                 if(result < 0){
@@ -115,13 +114,12 @@ int main(const int, const char* const* const){
                         result
                     );
 
-                    (void)printf("[I/O multiplexing client] Enter msg: "); //??
+                    (void)printf("[I/O multiplexing client] Enter msg: ");
                 }
             }
         }
     }
 
-    closesocket(mySocket);
-    WSACleanup();
-    return 0;
+    (void)closesocket(mySocket);
+    (void)WSACleanup();
 }
