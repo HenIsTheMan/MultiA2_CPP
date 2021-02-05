@@ -47,7 +47,7 @@ int main(const int, const char* const* const){
     }
 
     if(listen(serverSocket, SOMAXCONN) == SOCKET_ERROR){
-        (void)printf("listen function failed with error %d\n", WSAGetLastError());
+        (void)printf("listen failed with error %d\n", WSAGetLastError());
         (void)closesocket(serverSocket);
         (void)WSACleanup();
         return 1;

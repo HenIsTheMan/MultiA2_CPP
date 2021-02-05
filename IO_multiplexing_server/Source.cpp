@@ -2,95 +2,78 @@
 #include <string.h>
 #include <winsock2.h>
 
-/// Link with ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
 
-#define BUFSIZE     1024
-#define PORT_NUMBER 7890
+int main(const int argc, const char* const* const argv){
+    const int bufferSize = 1024;
+    int portNumber = 6969;
+    WSAData wsaData{};
+    SOCKET clientSocket = 0;
+    SOCKET serverSocket = 0;
+    SOCKADDR_IN clientAddress{};
+    SOCKADDR_IN serverAddress{};
+    int clientLen = sizeof(SOCKADDR_IN);
+    fd_set readFDS{};
+    fd_set tempFDS{};
+    TIMEVAL timeout{};
+    char msgBuffer[bufferSize]{};
+    int result = 0;
 
-int main( int argc, char **argv )
-{
-    int          Port = PORT_NUMBER;
-    WSADATA      WsaData;
-    SOCKET       ServerSocket;
-    SOCKADDR_IN  ServerAddr;
-
-    unsigned int Index;
-    int          ClientLen = sizeof(SOCKADDR_IN);
-    SOCKET       ClientSocket;
-    SOCKADDR_IN  ClientAddr;
-
-    fd_set       ReadFds, TempFds;
-    TIMEVAL      Timeout; // struct timeval timeout;
-
-    char         Message[BUFSIZE];
-    int          Return;
-
-    if( 2 == argc )
-    {
-        Port = atoi(argv[1]);
+    if(argc == 2){
+        portNumber = atoi(argv[1]);
     }
-    printf("Using port number : [%d]\n", Port);
+    printf("Using port number : [%d]\n", portNumber); //??
 
-    if( WSAStartup( MAKEWORD( 2, 2 ), &WsaData ) != 0 )
-    {
-        printf( "WSAStartup() error!\n" );
+    if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
+        (void)printf("WSAStartup() error!");
         return 1;
     }
 
-    ServerSocket = socket( AF_INET, SOCK_STREAM, 0 );
-    if( INVALID_SOCKET == ServerSocket )
-    {
-        printf( "socket() error\n" );
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if(serverSocket == INVALID_SOCKET){
+        (void)printf("socket failed with error %d\n", WSAGetLastError());
         return 1;
     }
 
-    ServerAddr.sin_family      = AF_INET;
-    ServerAddr.sin_port        = htons( Port );
-    ServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(portNumber);
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if( SOCKET_ERROR == bind( ServerSocket, (SOCKADDR *)&ServerAddr,
-        sizeof(ServerAddr) ) )
-    {
-        printf( "bind() error\n" );
+    if(bind(serverSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)) == SOCKET_ERROR){
+        (void)printf("bind failed with error %d\n", WSAGetLastError());
         return 1;
     }
 
-    if( SOCKET_ERROR == listen( ServerSocket, 5 ) )
-    {
-        printf( "listen() error\n" );
+    if(listen(serverSocket, 5) == SOCKET_ERROR){
+        (void)printf("listen failed with error %d\n", WSAGetLastError());
         return 1;
     }
 
-    FD_ZERO( &ReadFds );
-    FD_SET( ServerSocket, &ReadFds );
+    FD_ZERO(&readFDS);
+    FD_SET(serverSocket, &readFDS);
 
-    while(1)
-    {
-        TempFds = ReadFds;
-        Timeout.tv_sec = 5;
-        Timeout.tv_usec = 0;
+    for(;;){
+        tempFDS = readFDS;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 0;
 
-        if(SOCKET_ERROR == (Return = select(0, &TempFds, 0, 0, &Timeout)) )
-        { // Select() function returned error.
-            printf("select() error\n");
+        if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
+            (void)printf("select() error\n");
             return 1;
         }
-        if(0 == Return)
-        { // Select() function returned by timeout.
-            printf("Select returned timeout.\n");
-        }
-        else if( 0 > Return )
-        {
-            printf("Select returned error!\n");
+
+        if(result == 0){
+            (void)printf("select() returned by timeout.\n");
+        } else if(result < 0){
+            printf("Select returned error!\n"); //??
         }
         else
         {
-            for(Index = 0; Index < TempFds.fd_count; Index++)
+            for(int Index = 0; Index < TempFds.fd_count; Index++)
             {
-                if(TempFds.fd_array[Index] == ServerSocket)
+                if(TempFds.fd_array[Index] == serverSocket)
                 { // New connection requested by new client.
-                    ClientSocket = accept(ServerSocket, (SOCKADDR *)&ClientAddr,
+                    ClientSocket = accept(serverSocket, (SOCKADDR *)&ClientAddr,
                         &ClientLen);
                     FD_SET(ClientSocket, &ReadFds);
                     printf("New Client Accepted : Socket Handle [%llu]\n",
@@ -98,15 +81,15 @@ int main( int argc, char **argv )
                 }
                 else
                 { // Something to read from socket.
-                    Return = recv(TempFds.fd_array[Index], Message, BUFSIZE, 0);
-                    if(0 == Return)
+                    result = recv(TempFds.fd_array[Index], msgBuffer, bufferSize, 0);
+                    if(0 == result)
                     { // Connection closed message has arrived.
                         closesocket(TempFds.fd_array[Index]);
                         printf("Connection closed :Socket Handle [%llu]\n",
                             TempFds.fd_array[Index]);
                         FD_CLR(TempFds.fd_array[Index], &ReadFds);
                     }
-                    else if(0 > Return)
+                    else if(0 > result)
                     { // recv() function returned error.
                         closesocket(TempFds.fd_array[Index]);
                         printf("Exceptional error :Socket Handle [%llu]\n",
@@ -114,8 +97,8 @@ int main( int argc, char **argv )
                         FD_CLR(TempFds.fd_array[Index], &ReadFds);
                     }
                     else
-                    { // Message recevied.
-                        send(TempFds.fd_array[Index], Message, Return, 0);
+                    { // msgBuffer recevied.
+                        send(TempFds.fd_array[Index], msgBuffer, result, 0);
                     }
                 }
             }

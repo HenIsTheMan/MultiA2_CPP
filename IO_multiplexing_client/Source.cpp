@@ -24,7 +24,7 @@ int main(const int, const char* const* const){
     int result = 0;
 
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
-        (void)printf("WSAStartup() error!");
+        (void)printf("WSAStartup() error!\n");
         return 1;
     }
 
