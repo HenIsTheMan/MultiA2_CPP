@@ -11,7 +11,8 @@
 
 int main(const int, const char* const* const){
     const int bufferSize = 1024;
-    const int portNumber = 7890;
+    const int portNumber = 7890; //Server's port no.
+
     char IPAddress[16] = "127.0.0.1";
     WSAData wsaData{};
     SOCKET mySocket = 0;
@@ -41,7 +42,7 @@ int main(const int, const char* const* const){
     result = connect(mySocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
     if(result == SOCKET_ERROR){
         (void)closesocket(mySocket);
-        printf("Unable to connect to server: %ld\n", WSAGetLastError());
+        (void)printf("Unable to connect to server: %ld\n", WSAGetLastError());
         (void)WSACleanup();
         return 1;
     }

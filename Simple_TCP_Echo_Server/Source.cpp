@@ -66,7 +66,7 @@ int main(const int, const char* const* const){
                 return 1;
             } else{
                 (void)system("cls");
-                (void)printf("[TCP Echo Server] Client (%d.%d.%d.%d: %d) connected...\n\n",
+                (void)printf("Client (%d.%d.%d.%d: %d) connected...\n\n",
                     clientAddress.sin_addr.S_un.S_un_b.s_b1,
                     clientAddress.sin_addr.S_un.S_un_b.s_b2,
                     clientAddress.sin_addr.S_un.S_un_b.s_b3,
@@ -122,7 +122,7 @@ int main(const int, const char* const* const){
             }
         } else if(result == SOCKET_ERROR){
             (void)system("cls");
-            (void)printf("[TCP Echo Server] Client (%d.%d.%d.%d: %d) disconnected...\n\n",
+            (void)printf("Client (%d.%d.%d.%d: %d) disconnected...\n\n",
                 clientAddress.sin_addr.S_un.S_un_b.s_b1,
                 clientAddress.sin_addr.S_un.S_un_b.s_b2,
                 clientAddress.sin_addr.S_un.S_un_b.s_b3,
@@ -139,7 +139,7 @@ int main(const int, const char* const* const){
             //(void)printf("send failed with error %d\n", WSAGetLastError());
             //break;
             (void)system("cls");
-            (void)printf("[TCP Echo Server] Client (%d.%d.%d.%d: %d) disconnected...\n\n",
+            (void)printf("Client (%d.%d.%d.%d: %d) disconnected...\n\n",
                 clientAddress.sin_addr.S_un.S_un_b.s_b1,
                 clientAddress.sin_addr.S_un.S_un_b.s_b2,
                 clientAddress.sin_addr.S_un.S_un_b.s_b3,
