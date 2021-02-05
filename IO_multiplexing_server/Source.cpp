@@ -95,9 +95,9 @@ int main(const int argc, const char* const* const argv){
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
 
                     if(result <= 0){
-                        (void)closesocket(currSocket);
+                        (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
 
-                        (void)printf("Client disconnected: Socket Handle [%llu]\n\n", clientSocket);
+                        (void)closesocket(currSocket);
 
                         FD_CLR(currSocket, &readFDS);
                     } else{
