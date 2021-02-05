@@ -91,7 +91,9 @@ int main(const int argc, const char* const* const argv){
                     FD_SET(clientSocket, &readFDS);
                     (void)printf("Client connected: Socket Handle [%llu]\n\n", clientSocket);
                 } else{
+                    memset(msgBuffer, '\0', bufferSize);
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
+
                     if(result <= 0){
                         (void)closesocket(currSocket);
 
