@@ -92,23 +92,7 @@ int main(const int argc, const char* const* const argv){
                     (void)printf("Client connected: Socket Handle [%llu]\n\n", clientSocket);
                 } else{
                     result = recv(currSocket, msgBuffer, bufferSize, 0);
-                    if(result == 0){ //Connection closed, msg has arrived
-                        (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
-                            msgBuffer,
-                            clientAddress.sin_addr.S_un.S_un_b.s_b1,
-                            clientAddress.sin_addr.S_un.S_un_b.s_b2,
-                            clientAddress.sin_addr.S_un.S_un_b.s_b3,
-                            clientAddress.sin_addr.S_un.S_un_b.s_b4,
-                            ntohs(clientAddress.sin_port),
-                            result
-                        );
-
-                        (void)closesocket(currSocket);
-
-                        (void)printf("Connection closed: Socket Handle [%llu]\n", currSocket);
-
-                        FD_CLR(currSocket, &readFDS);
-                    } else if(result < 0){
+                    if(result <= 0){
                         (void)closesocket(currSocket);
 
                         (void)printf("Client disconnected: Socket Handle [%llu]\n\n", clientSocket);
