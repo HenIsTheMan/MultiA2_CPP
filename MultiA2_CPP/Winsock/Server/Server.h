@@ -7,13 +7,13 @@ struct Server final{
 
 	int portNumber = 2169;
 
-	SOCKET socket = 0;
+	SOCKET mySocket = 0;
 	SOCKADDR_IN address{};
 
 	struct InitParams final{
 		_6_DEFAULTED(InitParams)
 
-			int portNumber = -999;
+		int portNumber = -999;
 	};
 
 	void Init(const InitParams& params);

@@ -1,20 +1,15 @@
 #include "Winsock/Winsock.h"
 
 int main(const int argc, const char* const* const argv){
-    Winsock* winsock = new Winsock();
+    Winsock* const winsock = new Winsock();
     Winsock::InitParams params;
 
     if(argc == 2){
         params.portNumber = atoi(argv[1]);
     }
+    params.amtOfServers = 1;
 
     winsock->Init(params);
-
-    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if(serverSocket == INVALID_SOCKET){
-        (void)printf("socket failed with error %d\n", WSAGetLastError());
-        return 1;
-    }
 
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(portNumber);

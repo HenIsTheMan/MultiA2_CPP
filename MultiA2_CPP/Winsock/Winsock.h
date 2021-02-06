@@ -23,6 +23,7 @@ struct Winsock final{
 		_6_DEFAULTED(InitParams)
 
 		int portNumber = -999;
+		int amtOfServers = 1;
 	};
 
 	void Init(const InitParams& params);
