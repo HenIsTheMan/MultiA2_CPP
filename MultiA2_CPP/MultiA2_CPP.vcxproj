@@ -151,6 +151,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ObjPool\ObjPool.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Core.hpp" />
     <ClInclude Include="Winsock\Server\Server.h" />
@@ -163,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="ObjPool\ObjPool.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

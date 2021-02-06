@@ -5,6 +5,8 @@
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Winsock\Winsock.h" />
     <ClInclude Include="Winsock\Server\Server.h" />
+    <ClInclude Include="ObjPool\ObjPool.h" />
+    <ClInclude Include="Singleton.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPt.cpp" />
@@ -13,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="ObjPool\ObjPool.inl" />
   </ItemGroup>
 </Project>

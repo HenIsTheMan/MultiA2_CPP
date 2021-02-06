@@ -1,20 +1,14 @@
 #include "Winsock.h"
 
 Winsock::~Winsock(){
-    //ObjPool instead??
-
-    for(Client*& client: clients){
-        if(client){
-            delete client;
-            client = nullptr;
-        }
+    if(clientPool != nullptr){
+        clientPool->Destroy();
+        clientPool = nullptr;
     }
 
-    for(Server*& server: servers){
-        if(server){
-            delete server;
-            server = nullptr;
-        }
+    if(serverPool != nullptr){
+        serverPool->Destroy();
+        serverPool = nullptr;
     }
 
     (void)WSACleanup();

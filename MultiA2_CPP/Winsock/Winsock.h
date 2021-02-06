@@ -3,6 +3,8 @@
 #include "Client/Client.hpp"
 #include "Server/Server.h"
 
+#include "ObjPool/ObjPool.h"
+
 struct Winsock final{
 	Winsock() = default;
 	~Winsock();
@@ -17,6 +19,9 @@ struct Winsock final{
 	fd_set readFDS{};
 	fd_set tempFDS{};
 	TIMEVAL timeout{};
+
+	ObjPool<Client>* clientPool = ObjPool<Client>::GetObjPtr();
+	ObjPool<Server>* serverPool = ObjPool<Server>::GetObjPtr();
 
 	std::vector<Client*> clients;
 	std::vector<Server*> servers;
