@@ -7,6 +7,7 @@
     <ClInclude Include="Winsock\Server\Server.h" />
     <ClInclude Include="ObjPool\ObjPool.h" />
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="Pseudorand.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPt.cpp" />

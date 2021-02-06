@@ -5,7 +5,7 @@ void Server::Init(const Server::InitParams& params){
         portNumber = params.portNumber;
     }
 
-    (void)printf("[I/O multiplexing server] Waiting for clients to connect...\n\n");
+    (void)printf("[I/O multiplexing server] [%d] Waiting for clients to connect...\n\n", portNumber);
 
     mySocket = socket(AF_INET, SOCK_STREAM, 0);
     if(mySocket == INVALID_SOCKET){

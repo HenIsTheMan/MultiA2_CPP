@@ -1,5 +1,9 @@
 #include "Winsock/Winsock.h"
 
+#include <unordered_set>
+
+#include "Pseudorand.h"
+
 int main(const int argc, const char* const* const argv){
 	(void)_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	(void)SetWindowPos(
@@ -51,14 +55,22 @@ int main(const int argc, const char* const* const argv){
     winsock->Init(params);
 
     Server* const server = winsock->ActivateServer();
+	static std::unordered_set<int> portNumbers = {};
+
     if(argc == 2){
         server->Init({
             atoi(argv[1])
         });
     } else{
+		int val =  0;
+		do{
+			val = PseudorandMinMax(1000, 9999);
+		} while(portNumbers.find(val) != portNumbers.end());
+
         server->Init({
-            7890
+            val
         });
+		portNumbers.insert(val); 
     }
 
     winsock->Run();

@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ObjPool\ObjPool.h" />
+    <ClInclude Include="Pseudorand.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Core.hpp" />
