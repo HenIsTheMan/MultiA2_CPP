@@ -9,4 +9,10 @@ struct Client final{ //Passive DS (PDS)/Plain Old DS (PODS)/Plain Old Data (POD)
 	SOCKADDR_IN address{};
 
 	int sizeOfAddress = sizeof(SOCKADDR_IN);
+
+	int index;
+	std::string username;
+	float colorR;
+	float colorG;
+	float colorB;
 };

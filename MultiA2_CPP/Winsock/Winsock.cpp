@@ -116,6 +116,44 @@ void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
 void Winsock::ProcessRS(SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
+            const std::string rawStr(msgBuffer);
+            const int rawStrLen = rawStr.length();
+
+            std::vector<int> spacePosIndices;
+            spacePosIndices.reserve(rawStrLen);
+            for(int i = 0; i < rawStrLen; ++i){
+                if(rawStr[i] == ' ') {
+                    spacePosIndices.emplace_back(i);
+                }
+            }
+
+            const int spacePosIndicesSize = (int)spacePosIndices.size();
+            std::vector<std::string> txts;
+            txts.reserve(spacePosIndicesSize);
+            for(int i = 0; i < spacePosIndicesSize; ++i) {
+                if(i == 0) {
+                    txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
+                } else {
+                    txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                }
+            }
+
+            const std::string txt1st = txts[0];
+            if(txt1st[0] == '~' && txt1st[1] == '/') {
+                const std::string commandIdentifier = txt1st.substr(2);
+
+                if(commandIdentifier == "AddClient") {
+                    const int clientIndex = stoi(txts[1]);
+                    Client* const client = activeClients[clientIndex];
+
+                    client->index = clientIndex;
+                    client->username = txts[2];
+                    client->colorR = stof(txts[3]);
+                    client->colorG = stof(txts[4]);
+                    client->colorB = stof(txts[5]);
+                }
+            }
+
             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
                 msgBuffer,
                 client0->address.sin_addr.S_un.S_un_b.s_b1,
