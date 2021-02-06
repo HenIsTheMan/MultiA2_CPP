@@ -37,6 +37,7 @@ struct Winsock final{
 	};
 
 	void Init(const InitParams& params);
+	void Run();
 
 	void ActivateClient() const;
 	void ActivateServer() const;

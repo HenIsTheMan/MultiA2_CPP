@@ -11,4 +11,16 @@ void Server::Init(const Server::InitParams& params){
     if(mySocket == INVALID_SOCKET){
         return (void)printf("socket failed with error %d\n", WSAGetLastError());
     }
+
+    address.sin_family = AF_INET;
+    address.sin_port = htons(portNumber);
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if(bind(mySocket, (SOCKADDR*)&address, sizeof(address)) == SOCKET_ERROR){
+        return (void)printf("bind failed with error %d\n", WSAGetLastError());
+    }
+
+    if(listen(mySocket, 5) == SOCKET_ERROR){
+        return (void)printf("listen failed with error %d\n", WSAGetLastError());
+    }
 }
