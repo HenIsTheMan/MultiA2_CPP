@@ -1,11 +1,32 @@
 #include "Server.h"
 
+#include <fstream>
+
 void Server::Init(const Server::InitParams& params){
     if(params.portNumber != -999){
         portNumber = params.portNumber;
     }
 
-    (void)printf("[I/O multiplexing server] [%d] Waiting for clients to connect...\n\n", portNumber);
+	std::string line;
+	std::ifstream stream;
+    std::string IPAddress;
+
+	(void)system("ipconfig > ipconfig.txt");
+	stream.open("ipconfig.txt"); 
+
+	if(stream.is_open()){
+		while(!stream.eof()){
+			(void)getline(stream, line);
+			if(line.find("IPv4 Address. . . . . . . . . . . :", 0) != std::string::npos){
+				line.erase(0,39);
+                IPAddress = line;
+				stream.close();
+			}
+		}
+	}
+    (void)remove("ipconfig.txt");
+
+    (void)printf("[I/O multiplexing server] [%s:%d] Waiting for clients to connect...\n\n", IPAddress.c_str(), portNumber);
 
     mySocket = socket(AF_INET, SOCK_STREAM, 0);
     if(mySocket == INVALID_SOCKET){
