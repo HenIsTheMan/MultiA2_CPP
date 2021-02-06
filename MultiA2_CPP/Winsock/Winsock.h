@@ -30,8 +30,17 @@ struct Winsock final{
 		_6_DEFAULTED(InitParams)
 
 		int portNumber = -999;
-		int amtOfServers = 1;
+		int clientPoolInactiveSize = 999;
+		int clientPoolActiveSize = 999;
+		int serverPoolInactiveSize = 7;
+		int serverPoolActiveSize = 7;
 	};
 
 	void Init(const InitParams& params);
+
+	void ActivateClient() const;
+	void ActivateServer() const;
+
+	void DeactivateClient(Client* const client) const;
+	void DeactivateServer(Server* const server) const;
 };

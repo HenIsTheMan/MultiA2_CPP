@@ -19,14 +19,22 @@ void Winsock::Init(const InitParams& params){
         return (void)printf("WSAStartup() error!");
     }
 
-    servers.reserve(params.amtOfServers);
-    for(int i = 0; i < params.amtOfServers; ++i){
-        Server* const server = new Server();
-        Server::InitParams serverParams;
+    clientPool->Init(params.clientPoolInactiveSize, params.clientPoolActiveSize);
+    serverPool->Init(params.serverPoolInactiveSize, params.serverPoolActiveSize);
+}
 
-        serverParams.portNumber = params.portNumber;
+void Winsock::ActivateClient() const{
+    clientPool->ActivateObj();
+}
 
-        server->Init(serverParams);
-        servers.emplace_back(server);
-    }
+void Winsock::ActivateServer() const{
+    serverPool->ActivateObj();
+}
+
+void Winsock::DeactivateClient(Client* const client) const{
+    clientPool->DeactivateObj(client);
+}
+
+void Winsock::DeactivateServer(Server* const server) const{
+    serverPool->DeactivateObj(server);
 }
