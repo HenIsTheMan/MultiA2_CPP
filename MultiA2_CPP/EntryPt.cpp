@@ -13,6 +13,7 @@ int main(const int argc, const char* const* const argv){
     params.serverPoolActiveSize = 7;
 
     winsock->Init(params);
+    winsock->ActivateServer();
     winsock->Run();
 
     if(winsock != nullptr){
