@@ -136,13 +136,12 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     for(int i = 0; i < spacePosIndicesSize; ++i) {
                         if(i == 0) {
                             txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
-                        } else if(i == spacePosIndicesSize - 1) {
-                            if(spacePosIndices[i] + 1 < rawStrLen) {
-                                txts.emplace_back(rawStr.substr(spacePosIndices[i] + 1, rawStrLen - 1 - spacePosIndices[i]));
-                            }
-                            txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
                         } else {
                             txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+
+                            if(i == spacePosIndicesSize - 1 && spacePosIndices[i] + 1 < rawStrLen) {
+                                txts.emplace_back(rawStr.substr(spacePosIndices[i] + 1, rawStrLen - 1 - spacePosIndices[i]));
+                            }
                         }
                     }
 
