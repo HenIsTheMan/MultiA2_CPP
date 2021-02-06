@@ -66,9 +66,9 @@ void Winsock::Run(){
                         FD_SET(client->mySocket, &server->readFDS);
 
                         #if _WIN64
-                        (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
+                            (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
                         #else
-                        (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
+                            (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
                         #endif
                     } else{
                         memset(msgBuffer, '\0', msgBufferSize);
@@ -76,16 +76,23 @@ void Winsock::Run(){
 
                         if(result <= 0){
                             #if _WIN64
-                            (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
+                                (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
                             #else
-                            (void)printf("Client disconnected: Socket Handle [%u]\n\n", currSocket);
+                                (void)printf("Client disconnected: Socket Handle [%u]\n\n", currSocket);
                             #endif
+
+                            for(Client* const client: activeClients){
+                                if(client->mySocket == currSocket){
+                                    DeactivateClient(client);
+                                    break;
+                                }
+                            }
 
                             (void)closesocket(currSocket);
 
                             FD_CLR(currSocket, &server->readFDS);
                         } else{
-                            for(Client* const client : activeClients){
+                            for(Client* const client: activeClients){
                                 if(client->mySocket == currSocket){
                                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
                                         msgBuffer,
@@ -108,6 +115,8 @@ void Winsock::Run(){
                                         ntohs(client->address.sin_port),
                                         result
                                     );
+
+                                    break;
                                 }
                             }
                         }
