@@ -76,7 +76,7 @@ void Winsock::RunChiefProcess(Server* const server){
             if(result <= 0){
                 OnClientDisconnected(server, currSocket);
             } else{
-                ProcessRS(currSocket);
+                //ProcessRS(currSocket);
             }
         }
     }
@@ -175,9 +175,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
             );
 
             for(Client* const client1: activeClients){
-                int len = sizeof(client1->address);
-                result = sendto(client1->mySocket, msgBuffer, result, 0, (struct sockaddr*)&client1->address, len);
-                //server->mySocket
+                result = send(client1->mySocket, msgBuffer, result, 0);
 
                 (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
                     msgBuffer,
