@@ -1,5 +1,24 @@
 #pragma once
 
+#include <string>
+#include <vector>
+
+#ifndef SLN_CONFIG
+	#ifdef _DEBUG
+		#define SLN_CONFIG (std::string)"Debug"
+	#else
+		#define SLN_CONFIG (std::string)"Release"
+	#endif
+#endif
+
+#ifndef SLN_PLAT
+	#ifdef _WIN64
+		#define SLN_PLAT (std::string)"x64"
+	#else
+		#define SLN_PLAT (std::string)"x86"
+	#endif
+#endif
+
 #ifndef _4_DEFAULTED
 #define _4_DEFAULTED(...) \
 		__VA_ARGS__(const __VA_ARGS__&) = default; \
@@ -20,8 +39,6 @@
 		\
 		~__VA_ARGS__() = default;
 #endif
-
-#include <vector>
 
 #include <stdio.h>
 #include <string.h>
