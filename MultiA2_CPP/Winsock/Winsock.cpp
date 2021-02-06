@@ -27,7 +27,7 @@ void Winsock::Init(const InitParams& params){
 }
 
 void Winsock::Run(){
-    static int timeoutCounter = 0;
+    //static int timeoutCounter = 0;
 
     for(;;){
         for(Server* const server: activeServers){
@@ -38,17 +38,17 @@ void Winsock::Run(){
             }
 
             if(result == 0){
-                if(timeoutCounter > 0){
-                    (void)printf("\033[A\033[A\33[2K");
-                }
+                //if(timeoutCounter > 0){
+                //    (void)printf("\033[A\033[A\33[2K");
+                //}
 
-                (void)printf("select() returned by timeout (%d)\n\n", ++timeoutCounter);
+                //(void)printf("select() returned by timeout (%d)\n\n", ++timeoutCounter);
             } else if(result < 0){
-                timeoutCounter = 0;
+                //timeoutCounter = 0;
 
                 (void)printf("select() error\n");
             } else{
-                timeoutCounter = 0;
+                //timeoutCounter = 0;
 
                 for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                     SOCKET& currSocket = tempFDS.fd_array[i];
@@ -87,7 +87,7 @@ void Winsock::Run(){
                         } else{
                             for(Client* const client : activeClients){
                                 if(client->mySocket == currSocket){
-                                    (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
+                                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
                                         msgBuffer,
                                         client->address.sin_addr.S_un.S_un_b.s_b1,
                                         client->address.sin_addr.S_un.S_un_b.s_b2,
@@ -99,7 +99,7 @@ void Winsock::Run(){
 
                                     result = send(currSocket, msgBuffer, result, 0);
 
-                                    (void)printf("\"%s\" (to %d.%d.%d.%d: %d, bytes sent: %d)\n\n",
+                                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
                                         msgBuffer,
                                         client->address.sin_addr.S_un.S_un_b.s_b1,
                                         client->address.sin_addr.S_un.S_un_b.s_b2,
