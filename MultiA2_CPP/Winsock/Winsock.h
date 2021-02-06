@@ -38,6 +38,11 @@ struct Winsock final{
 
 	void Init(const InitParams& params);
 	void Run();
+	void RunChiefProcess(Server* const server);
+
+	void OnClientConnected(Server* const server);
+	void OnClientDisconnected(Server* const server, SOCKET& currSocket);
+	void ProcessRS(SOCKET& currSocket);
 
 	Client* ActivateClient() const;
 	Server* ActivateServer() const;
