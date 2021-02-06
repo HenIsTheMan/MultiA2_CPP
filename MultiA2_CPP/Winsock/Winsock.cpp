@@ -23,6 +23,9 @@ void Winsock::Init(const InitParams& params){
     serverPool->Init(params.serverPoolInactiveSize, params.serverPoolActiveSize);
 
     FD_ZERO(&readFDS);
+
+    timeout.tv_sec = params.timeoutSec;
+    timeout.tv_usec = params.timeoutMicrosec;
 }
 
 void Winsock::Run(){
@@ -30,8 +33,6 @@ void Winsock::Run(){
 
     for(;;){
         tempFDS = readFDS;
-        timeout.tv_sec = 5;
-        timeout.tv_usec = 0;
 
         if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
             return (void)printf("select() error\n");

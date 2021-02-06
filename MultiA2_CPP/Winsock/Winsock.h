@@ -31,8 +31,10 @@ struct Winsock final{
 
 		int clientPoolInactiveSize = 999;
 		int clientPoolActiveSize = 999;
-		int serverPoolInactiveSize = 7;
-		int serverPoolActiveSize = 7;
+		int serverPoolInactiveSize = 4;
+		int serverPoolActiveSize = 4;
+		long timeoutSec = 4;
+		long timeoutMicrosec = 0;
 	};
 
 	void Init(const InitParams& params);
