@@ -4,7 +4,31 @@
 
 #include "Pseudorand.h"
 
+
+
+
+#include <wininet.h>
+
+#pragma comment(lib, "wininet")
+
 int main(const int argc, const char* const* const argv){
+	HINTERNET hInternet, hFile;
+	DWORD rSize;
+	char buffer[47];
+
+	hInternet = InternetOpen(NULL, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	hFile = InternetOpenUrl(hInternet, L"http://myexternalip.com/raw", NULL, 0, INTERNET_FLAG_RELOAD, 0);
+	InternetReadFile(hFile, &buffer, sizeof(buffer), &rSize);
+	buffer[rSize] = '\0';
+
+	InternetCloseHandle(hFile);
+	InternetCloseHandle(hInternet);
+
+	(void)puts(buffer);
+	system("pause");
+	return 0;
+
+
 	(void)_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	(void)SetWindowPos(
 		GetConsoleWindow(),
