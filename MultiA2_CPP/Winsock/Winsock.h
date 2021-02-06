@@ -23,13 +23,9 @@ struct Winsock final{
 	ObjPool<Client>* clientPool = ObjPool<Client>::GetObjPtr();
 	ObjPool<Server>* serverPool = ObjPool<Server>::GetObjPtr();
 
-	std::vector<Client*> clients;
-	std::vector<Server*> servers;
-
 	struct InitParams final{
 		_6_DEFAULTED(InitParams)
 
-		int portNumber = -999;
 		int clientPoolInactiveSize = 999;
 		int clientPoolActiveSize = 999;
 		int serverPoolInactiveSize = 7;

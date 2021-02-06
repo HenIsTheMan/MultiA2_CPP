@@ -50,7 +50,8 @@ void Winsock::Run(){
         } else{
             timeoutCounter = 0;
 
-            for(Server* const server: servers){
+            const std::vector<Server*>& activeServers = serverPool->GetActiveObjs();
+            for(Server* const server: activeServers){
                 for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                     SOCKET& currSocket = tempFDS.fd_array[i];
 
@@ -129,11 +130,7 @@ Client* Winsock::ActivateClient() const{
 }
 
 Server* Winsock::ActivateServer() const{
-    Server* const server = serverPool->ActivateObj();
-
-    FD_SET(server->mySocket, &readFDS);
-
-    return server;
+    return serverPool->ActivateObj();
 }
 
 void Winsock::DeactivateClient(Client* const client) const{
