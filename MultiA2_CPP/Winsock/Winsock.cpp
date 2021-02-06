@@ -128,29 +128,31 @@ void Winsock::ProcessRS(SOCKET& currSocket){
             }
 
             const int spacePosIndicesSize = (int)spacePosIndices.size();
-            std::vector<std::string> txts;
-            txts.reserve(spacePosIndicesSize);
-            for(int i = 0; i < spacePosIndicesSize; ++i) {
-                if(i == 0) {
-                    txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
-                } else {
-                    txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+            if(spacePosIndicesSize > 0){
+                std::vector<std::string> txts;
+                txts.reserve(spacePosIndicesSize);
+                for(int i = 0; i < spacePosIndicesSize; ++i) {
+                    if(i == 0) {
+                        txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
+                    } else {
+                        txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                    }
                 }
-            }
 
-            const std::string txt1st = txts[0];
-            if(txt1st[0] == '~' && txt1st[1] == '/') {
-                const std::string commandIdentifier = txt1st.substr(2);
+                const std::string txt1st = txts[0];
+                if(txt1st[0] == '~' && txt1st[1] == '/') {
+                    const std::string commandIdentifier = txt1st.substr(2);
 
-                if(commandIdentifier == "AddClient") {
-                    const int clientIndex = stoi(txts[1]);
-                    Client* const client = activeClients[clientIndex];
+                    if(commandIdentifier == "AddClient") {
+                        const int clientIndex = stoi(txts[1]);
+                        Client* const client = activeClients[clientIndex];
 
-                    client->index = clientIndex;
-                    client->username = txts[2];
-                    client->colorR = stof(txts[3]);
-                    client->colorG = stof(txts[4]);
-                    client->colorB = stof(txts[5]);
+                        client->index = clientIndex;
+                        client->username = txts[2];
+                        client->colorR = stof(txts[3]);
+                        client->colorG = stof(txts[4]);
+                        client->colorB = stof(txts[5]);
+                    }
                 }
             }
 
