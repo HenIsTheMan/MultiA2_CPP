@@ -1,5 +1,25 @@
 #include "Winsock.h"
 
+Winsock::~Winsock(){
+    //ObjPool instead??
+
+    for(Client*& client: clients){
+        if(client){
+            delete client;
+            client = nullptr;
+        }
+    }
+
+    for(Server*& server: servers){
+        if(server){
+            delete server;
+            server = nullptr;
+        }
+    }
+
+    (void)WSACleanup();
+}
+
 void Winsock::Init(const InitParams& params){
     if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0){
         return (void)printf("WSAStartup() error!");

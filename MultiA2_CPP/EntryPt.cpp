@@ -1,7 +1,7 @@
 #include "Winsock/Winsock.h"
 
 int main(const int argc, const char* const* const argv){
-    Winsock* const winsock = new Winsock();
+    Winsock* winsock = new Winsock();
     Winsock::InitParams params;
 
     if(argc == 2){
@@ -111,8 +111,6 @@ int main(const int argc, const char* const* const argv){
             }
         }
     }
-
-    (void)WSACleanup();
 
     if(winsock != nullptr){
         delete winsock;

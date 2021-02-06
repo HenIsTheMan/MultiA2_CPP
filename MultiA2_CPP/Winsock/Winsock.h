@@ -4,7 +4,9 @@
 #include "Server/Server.h"
 
 struct Winsock final{
-	_6_DEFAULTED(Winsock)
+	Winsock() = default;
+	~Winsock();
+	_4_DEFAULTED(Winsock)
 
 	int result = 0;
 

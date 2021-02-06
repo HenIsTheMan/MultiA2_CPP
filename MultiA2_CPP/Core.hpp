@@ -1,5 +1,13 @@
 #pragma once
 
+#ifndef _4_DEFAULTED
+#define _4_DEFAULTED(...) \
+		__VA_ARGS__(const __VA_ARGS__&) = default; \
+		__VA_ARGS__(__VA_ARGS__&&) noexcept = default; \
+		__VA_ARGS__& operator=(const __VA_ARGS__&) = default; \
+		__VA_ARGS__& operator=(__VA_ARGS__&&) noexcept = default;
+#endif
+
 #ifndef _6_DEFAULTED
 #define _6_DEFAULTED(...) \
 		__VA_ARGS__() = default; \
