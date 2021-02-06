@@ -28,10 +28,13 @@ void Server::Init(const Server::InitParams& params){
 
     (void)printf("[I/O multiplexing server] [%s:%d] Waiting for clients to connect...\n\n", IPAddress.c_str(), portNumber);
 
-    mySocket = socket(AF_INET, SOCK_DGRAM, 0);
+    mySocket = socket(AF_INET, SOCK_STREAM, 0);
     if(mySocket == INVALID_SOCKET){
         return (void)printf("socket failed with error %d\n", WSAGetLastError());
     }
+
+    FD_ZERO(&readFDS);
+    FD_SET(mySocket, &readFDS);
 
     address.sin_family = AF_INET;
     address.sin_port = htons(portNumber);
@@ -41,9 +44,7 @@ void Server::Init(const Server::InitParams& params){
         return (void)printf("bind failed with error %d\n", WSAGetLastError());
     }
 
-    FD_ZERO(&readFDS);
-
-    //if(listen(mySocket, 5) == SOCKET_ERROR){
-    //    return (void)printf("listen failed with error %d\n", WSAGetLastError());
-    //}
+    if(listen(mySocket, 5) == SOCKET_ERROR){
+        return (void)printf("listen failed with error %d\n", WSAGetLastError());
+    }
 }

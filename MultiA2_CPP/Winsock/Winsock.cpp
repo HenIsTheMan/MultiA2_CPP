@@ -32,9 +32,8 @@ void Winsock::Run(){
     for(;;){
         for(Server* const server: activeServers){
             tempFDS = server->readFDS;
-            FD_SET(server->mySocket, &tempFDS);
 
-            if((result = select(server->mySocket, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
+            if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
                 return (void)printf("select() error\n");
             }
 
@@ -51,7 +50,7 @@ void Winsock::Run(){
             } else{
                 //timeoutCounter = 0;
 
-                //RunChiefProcess(server);
+                RunChiefProcess(server);
             }
         }
     }
