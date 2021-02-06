@@ -92,29 +92,31 @@ void Winsock::Run(){
 
                             FD_CLR(currSocket, &server->readFDS);
                         } else{
-                            for(Client* const client: activeClients){
-                                if(client->mySocket == currSocket){
+                            for(Client* const client0: activeClients){
+                                if(client0->mySocket == currSocket){
                                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
                                         msgBuffer,
-                                        client->address.sin_addr.S_un.S_un_b.s_b1,
-                                        client->address.sin_addr.S_un.S_un_b.s_b2,
-                                        client->address.sin_addr.S_un.S_un_b.s_b3,
-                                        client->address.sin_addr.S_un.S_un_b.s_b4,
-                                        ntohs(client->address.sin_port),
+                                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                                        ntohs(client0->address.sin_port),
                                         result
                                     );
 
-                                    result = send(currSocket, msgBuffer, result, 0);
+                                    for(Client* const client1: activeClients){
+                                        result = send(client1->mySocket, msgBuffer, result, 0);
 
-                                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
-                                        msgBuffer,
-                                        client->address.sin_addr.S_un.S_un_b.s_b1,
-                                        client->address.sin_addr.S_un.S_un_b.s_b2,
-                                        client->address.sin_addr.S_un.S_un_b.s_b3,
-                                        client->address.sin_addr.S_un.S_un_b.s_b4,
-                                        ntohs(client->address.sin_port),
-                                        result
-                                    );
+                                        (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+                                            msgBuffer,
+                                            client1->address.sin_addr.S_un.S_un_b.s_b1,
+                                            client1->address.sin_addr.S_un.S_un_b.s_b2,
+                                            client1->address.sin_addr.S_un.S_un_b.s_b3,
+                                            client1->address.sin_addr.S_un.S_un_b.s_b4,
+                                            ntohs(client1->address.sin_port),
+                                            result
+                                        );
+                                    }
 
                                     break;
                                 }
