@@ -117,32 +117,36 @@ void Winsock::ProcessRS(SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
             const std::string rawStr(msgBuffer);
-            const int rawStrLen = rawStr.length();
 
-            std::vector<int> spacePosIndices;
-            spacePosIndices.reserve(rawStrLen);
-            for(int i = 0; i < rawStrLen; ++i){
-                if(rawStr[i] == ' ') {
-                    spacePosIndices.emplace_back(i);
-                }
-            }
+            if(rawStr[0] == '~' && rawStr[1] == '/') {
+                const int rawStrLen = rawStr.length();
 
-            const int spacePosIndicesSize = (int)spacePosIndices.size();
-            if(spacePosIndicesSize > 0){
-                std::vector<std::string> txts;
-                txts.reserve(spacePosIndicesSize);
-                for(int i = 0; i < spacePosIndicesSize; ++i) {
-                    if(i == 0) {
-                        txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
-                    } else {
-                        txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                std::vector<int> spacePosIndices;
+                spacePosIndices.reserve(rawStrLen);
+                for(int i = 0; i < rawStrLen; ++i){
+                    if(rawStr[i] == ' ') {
+                        spacePosIndices.emplace_back(i);
                     }
                 }
 
-                const std::string txt1st = txts[0];
-                if(txt1st[0] == '~' && txt1st[1] == '/') {
-                    const std::string commandIdentifier = txt1st.substr(2);
+                const int spacePosIndicesSize = (int)spacePosIndices.size();
+                if(spacePosIndicesSize > 0){
+                    std::vector<std::string> txts;
+                    txts.reserve(spacePosIndicesSize);
+                    for(int i = 0; i < spacePosIndicesSize; ++i) {
+                        if(i == 0) {
+                            txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
+                        } else if(i == spacePosIndicesSize - 1) {
+                            if(spacePosIndices[i] + 1 < rawStrLen) {
+                                txts.emplace_back(rawStr.substr(spacePosIndices[i] + 1, rawStrLen - 1 - spacePosIndices[i]));
+                            }
+                            txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                        } else {
+                            txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                        }
+                    }
 
+                    const std::string commandIdentifier = txts[0].substr(2);
                     if(commandIdentifier == "AddClient") {
                         const int clientIndex = stoi(txts[1]);
                         Client* const client = activeClients[clientIndex];
