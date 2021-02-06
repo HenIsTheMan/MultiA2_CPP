@@ -69,7 +69,7 @@ void Winsock::RunChiefProcess(Server* const server){
             if(result <= 0){
                 OnClientDisconnected(server, currSocket);
             } else{
-                ProcessRS();
+                ProcessRS(currSocket);
             }
         }
     }
