@@ -51,7 +51,7 @@ void Winsock::Run(){
             } else{
                 //timeoutCounter = 0;
 
-                //RunChiefProcess(server);
+                RunChiefProcess(server);
             }
         }
     }
@@ -65,12 +65,18 @@ void Winsock::RunChiefProcess(Server* const server){
             OnClientConnected(server);
         } else{
             memset(msgBuffer, '\0', msgBufferSize);
-            result = recv(currSocket, msgBuffer, msgBufferSize, 0);
+            for(Client* const client: activeClients){
+                if(client->mySocket == currSocket){
+                    int len = sizeof(client->address);
+                    result = recvfrom(server->mySocket, msgBuffer, msgBufferSize, 0, (struct sockaddr*)&client->address, &len);
+                    break;
+                }
+            }
 
             if(result <= 0){
                 OnClientDisconnected(server, currSocket);
             } else{
-                ProcessRS(currSocket);
+                //ProcessRS(currSocket);
             }
         }
     }
@@ -78,15 +84,13 @@ void Winsock::RunChiefProcess(Server* const server){
 
 void Winsock::OnClientConnected(Server* const server){
     Client* const client = ActivateClient();
-    client->mySocket = accept(server->mySocket, (SOCKADDR*)&client->address, &client->sizeOfAddress);
-
-    if(client->mySocket == INVALID_SOCKET){
-        (void)printf("accept failed with error %ld\n", WSAGetLastError());
-        (void)closesocket(server->mySocket);
-        return (void)WSACleanup();
+    if ((client->mySocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) { 
+        printf("socket creation failed"); 
+        exit(0); 
     }
 
-    FD_SET(client->mySocket, &server->readFDS);
+    FD_SET(client->mySocket, &tempFDS);
+    //FD_SET(client->mySocket, &server->readFDS);
 
     #if _WIN64
         (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
