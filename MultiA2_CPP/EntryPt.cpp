@@ -60,7 +60,6 @@ int main(const int argc, const char* const* const argv){
             7890
         });
     }
-    FD_SET(server->mySocket, &winsock->readFDS);
 
     winsock->Run();
 

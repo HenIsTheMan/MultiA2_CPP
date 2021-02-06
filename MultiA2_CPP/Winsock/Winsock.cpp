@@ -22,8 +22,6 @@ void Winsock::Init(const InitParams& params){
     clientPool->Init(params.clientPoolInactiveSize, params.clientPoolActiveSize);
     serverPool->Init(params.serverPoolInactiveSize, params.serverPoolActiveSize);
 
-    FD_ZERO(&readFDS);
-
     timeout.tv_sec = params.timeoutSec;
     timeout.tv_usec = params.timeoutMicrosec;
 }
@@ -32,26 +30,26 @@ void Winsock::Run(){
     static int timeoutCounter = 0;
 
     for(;;){
-        tempFDS = readFDS;
+        for(Server* const server: activeServers){
+            tempFDS = server->readFDS;
 
-        if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
-            return (void)printf("select() error\n");
-        }
-
-        if(result == 0){
-            if(timeoutCounter > 0){
-                (void)printf("\033[A\033[A\33[2K");
+            if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
+                return (void)printf("select() error\n");
             }
 
-            (void)printf("select() returned by timeout (%d)\n\n", ++timeoutCounter);
-        } else if(result < 0){
-            timeoutCounter = 0;
+            if(result == 0){
+                if(timeoutCounter > 0){
+                    (void)printf("\033[A\033[A\33[2K");
+                }
 
-            (void)printf("select() error\n");
-        } else{
-            timeoutCounter = 0;
+                (void)printf("select() returned by timeout (%d)\n\n", ++timeoutCounter);
+            } else if(result < 0){
+                timeoutCounter = 0;
 
-            for(Server* const server: activeServers){
+                (void)printf("select() error\n");
+            } else{
+                timeoutCounter = 0;
+
                 for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                     SOCKET& currSocket = tempFDS.fd_array[i];
 
@@ -65,12 +63,12 @@ void Winsock::Run(){
                             return (void)WSACleanup();
                         }
 
-                        FD_SET(client->mySocket, &readFDS);
+                        FD_SET(client->mySocket, &server->readFDS);
 
                         #if _WIN64
-                            (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
+                        (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
                         #else
-                            (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
+                        (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
                         #endif
                     } else{
                         memset(msgBuffer, '\0', msgBufferSize);
@@ -78,16 +76,16 @@ void Winsock::Run(){
 
                         if(result <= 0){
                             #if _WIN64
-                                (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
+                            (void)printf("Client disconnected: Socket Handle [%llu]\n\n", currSocket);
                             #else
-                                (void)printf("Client disconnected: Socket Handle [%u]\n\n", currSocket);
+                            (void)printf("Client disconnected: Socket Handle [%u]\n\n", currSocket);
                             #endif
 
                             (void)closesocket(currSocket);
 
-                            FD_CLR(currSocket, &readFDS);
+                            FD_CLR(currSocket, &server->readFDS);
                         } else{
-                            for(Client* const client: activeClients){
+                            for(Client* const client : activeClients){
                                 if(client->mySocket == currSocket){
                                     (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
                                         msgBuffer,

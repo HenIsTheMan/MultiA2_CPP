@@ -7,6 +7,7 @@ struct Server final{
 
 	int portNumber = 2169;
 
+	fd_set readFDS{};
 	SOCKET mySocket = 0;
 	SOCKADDR_IN address{};
 

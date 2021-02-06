@@ -12,6 +12,9 @@ void Server::Init(const Server::InitParams& params){
         return (void)printf("socket failed with error %d\n", WSAGetLastError());
     }
 
+    FD_ZERO(&readFDS);
+    FD_SET(mySocket, &readFDS);
+
     address.sin_family = AF_INET;
     address.sin_port = htons(portNumber);
     address.sin_addr.s_addr = htonl(INADDR_ANY);

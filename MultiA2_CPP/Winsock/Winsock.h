@@ -16,7 +16,6 @@ struct Winsock final{
 	char msgBuffer[msgBufferSize]{};
 
 	WSAData wsaData{};
-	fd_set readFDS{};
 	fd_set tempFDS{};
 	TIMEVAL timeout{};
 
