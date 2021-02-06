@@ -23,6 +23,9 @@ struct Winsock final{
 	ObjPool<Client>* clientPool = ObjPool<Client>::GetObjPtr();
 	ObjPool<Server>* serverPool = ObjPool<Server>::GetObjPtr();
 
+	const std::vector<Server*>& activeServers = serverPool->GetActiveObjs();
+	const std::vector<Client*>& activeClients = clientPool->GetActiveObjs();
+
 	struct InitParams final{
 		_6_DEFAULTED(InitParams)
 

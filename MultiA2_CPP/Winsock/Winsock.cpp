@@ -50,7 +50,6 @@ void Winsock::Run(){
         } else{
             timeoutCounter = 0;
 
-            const std::vector<Server*>& activeServers = serverPool->GetActiveObjs();
             for(Server* const server: activeServers){
                 for(int i = 0; i < (int)tempFDS.fd_count; ++i){
                     SOCKET& currSocket = tempFDS.fd_array[i];
@@ -87,12 +86,7 @@ void Winsock::Run(){
 
                             FD_CLR(currSocket, &readFDS);
                         } else{
-                            const std::vector<Client*>& activeClients = clientPool->GetActiveObjs();
-                            const size_t activeClientsSize = activeClients.size();
-
-                            for(size_t i = 0; i < activeClientsSize; ++i){
-                                Client* const client = activeClients[i];
-
+                            for(Client* const client: activeClients){
                                 if(client->mySocket == currSocket){
                                     (void)printf("\"%s\" (from %d.%d.%d.%d: %d, bytes read: %d)\n",
                                         msgBuffer,
