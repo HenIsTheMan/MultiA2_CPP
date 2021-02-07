@@ -106,7 +106,7 @@ void Winsock::OnClientConnected(Server* const server){
     }
 
     const char* const updateClientsMsgCstr = updateClientsMsg.c_str();
-    result = send(client->mySocket, updateClientsMsgCstr, updateClientsMsg.length() + 1, 0); //??
+    result = send(client->mySocket, updateClientsMsgCstr, updateClientsMsg.length(), 0);
 
     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
         updateClientsMsgCstr,
