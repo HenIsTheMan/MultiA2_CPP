@@ -149,7 +149,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
             };
 
             if(txts[1].length() == 1){
-                const std::string normalMsg = "-1 / "
+                const std::string normalMsg = txts[0] + " / "
                     + client0->username + delimiter
                     + std::to_string(client0->colorR) + delimiter
                     + std::to_string(client0->colorG) + delimiter
@@ -159,17 +159,19 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 const char* const normalMsgCStr = normalMsg.c_str();
                     
                 for(Client* const client1: activeClients){
-                    result = send(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0); //+1 for a '\0'
+                    if(txts[0] == "0" || (txts[0] == "1" && client1 == client0)){
+                        result = send(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0); //+1 for a '\0'
 
-                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
-                        normalMsgCStr,
-                        client1->address.sin_addr.S_un.S_un_b.s_b1,
-                        client1->address.sin_addr.S_un.S_un_b.s_b2,
-                        client1->address.sin_addr.S_un.S_un_b.s_b3,
-                        client1->address.sin_addr.S_un.S_un_b.s_b4,
-                        ntohs(client1->address.sin_port),
-                        result
-                    );
+                        (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                            normalMsgCStr,
+                            client1->address.sin_addr.S_un.S_un_b.s_b1,
+                            client1->address.sin_addr.S_un.S_un_b.s_b2,
+                            client1->address.sin_addr.S_un.S_un_b.s_b3,
+                            client1->address.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(client1->address.sin_port),
+                            result
+                        );
+                    }
                 }
             } else{
                 const std::string commandIdentifier = txts[1].substr(1);
