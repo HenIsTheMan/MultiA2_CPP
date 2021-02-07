@@ -120,7 +120,15 @@ void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
 void Winsock::ProcessRS(SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
-            bool sendBack = true;
+            (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
+                msgBuffer,
+                client0->address.sin_addr.S_un.S_un_b.s_b1,
+                client0->address.sin_addr.S_un.S_un_b.s_b2,
+                client0->address.sin_addr.S_un.S_un_b.s_b3,
+                client0->address.sin_addr.S_un.S_un_b.s_b4,
+                ntohs(client0->address.sin_port),
+                result
+            );
 
             std::string pureStr(msgBuffer);
             int pureStrLen = pureStr.length();
@@ -168,66 +176,37 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
                 };
 
-                const std::string commandIdentifier = txts[1].substr(1);
-                if(commandIdentifier == "NewClientJoined"){
-                    sendBack = false;
+                if(txts[1].length() == 1){
+                    const std::string normalMsg = "-1 / "
+                        + client0->username + delimiter
+                        + std::to_string(client0->colorR) + delimiter
+                        + std::to_string(client0->colorG) + delimiter
+                        + std::to_string(client0->colorB) + delimiter
+                        + txts[2];
 
-                    const std::string& msgTxt = txts[2];
-                    const int msgTxtLen = msgTxt.length();
-                    char msgDelimiter = ' ';
+                    const char* const normalMsgCStr = normalMsg.c_str();
+                    
+                    for(Client* const client1: activeClients){
+                        result = send(client1->mySocket, normalMsgCStr, normalMsg.length(), 0);
 
-                    std::vector<int> msgDelimiterPos;
-                    for(int j = 0; j < msgTxtLen; ++j) {
-                        if(msgTxt[j] == msgDelimiter) {
-                            msgDelimiterPos.emplace_back(j);
-                        }
+                        (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+                            normalMsgCStr,
+                            client1->address.sin_addr.S_un.S_un_b.s_b1,
+                            client1->address.sin_addr.S_un.S_un_b.s_b2,
+                            client1->address.sin_addr.S_un.S_un_b.s_b3,
+                            client1->address.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(client1->address.sin_port),
+                            result
+                        );
                     }
-
-                    const int msgDelimiterPosSize = (int)msgDelimiterPos.size();
-                    std::vector<std::string> contentTxts;
-
-                    for(int j = 0; j < msgDelimiterPosSize; ++j){
-                        if(j == 0) {
-                            contentTxts.emplace_back(msgTxt.substr(0, msgDelimiterPos[0]));
-                        } else {
-                            contentTxts.emplace_back(msgTxt.substr(msgDelimiterPos[j - 1] + 1, msgDelimiterPos[j] - (msgDelimiterPos[j - 1] + 1)));
-
-                            if(j == msgDelimiterPosSize - 1 && msgDelimiterPos[j] + 1 < rawStrLen) {
-                                contentTxts.emplace_back(msgTxt.substr(msgDelimiterPos[j] + 1, rawStrLen - 1 - msgDelimiterPos[j]));
-                            }
-                        }
+                } else{
+                    const std::string commandIdentifier = txts[1].substr(1);
+                    if(commandIdentifier == "NewClientJoined"){
+                        client0->username = txts[2];
+                        client0->colorR = PseudorandMinMax(0.0f, 1.0f);
+                        client0->colorG = PseudorandMinMax(0.0f, 1.0f);
+                        client0->colorB = PseudorandMinMax(0.0f, 1.0f);
                     }
-
-                    client0->username = contentTxts[0];
-                    client0->colorR = PseudorandMinMax(0.0f, 1.0f);
-                    client0->colorG = PseudorandMinMax(0.0f, 1.0f);
-                    client0->colorB = PseudorandMinMax(0.0f, 1.0f);
-                }
-            }
-
-            (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
-                msgBuffer,
-                client0->address.sin_addr.S_un.S_un_b.s_b1,
-                client0->address.sin_addr.S_un.S_un_b.s_b2,
-                client0->address.sin_addr.S_un.S_un_b.s_b3,
-                client0->address.sin_addr.S_un.S_un_b.s_b4,
-                ntohs(client0->address.sin_port),
-                result
-            );
-
-            if(sendBack){
-                for(Client* const client1 : activeClients){
-                    result = send(client1->mySocket, msgBuffer, result, 0);
-
-                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
-                        msgBuffer,
-                        client1->address.sin_addr.S_un.S_un_b.s_b1,
-                        client1->address.sin_addr.S_un.S_un_b.s_b2,
-                        client1->address.sin_addr.S_un.S_un_b.s_b3,
-                        client1->address.sin_addr.S_un.S_un_b.s_b4,
-                        ntohs(client1->address.sin_port),
-                        result
-                    );
                 }
             }
 
