@@ -156,7 +156,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 }
             }
 
-            int rawStrsSize = (int)pureDelimiterPos.size();
+            int rawStrsSize = (int)rawStrs.size();
             for(int i = 0; i < rawStrsSize; ++i) {
                 std::string rawStr = rawStrs[i];
                 int rawStrLen = rawStr.length();
@@ -175,6 +175,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     rawStr.substr(delimiterPos[0] + 1, delimiterPos[1] - (delimiterPos[0] + 1)),
                     rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
                 };
+
+                ///
+                for(auto str: txts){
+                    (void)puts(str.c_str());
+                }
 
                 if(txts[1].length() == 1){
                     const std::string normalMsg = "-1 / "
