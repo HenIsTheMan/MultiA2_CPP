@@ -154,12 +154,12 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     + std::to_string(client0->colorR) + delimiter
                     + std::to_string(client0->colorG) + delimiter
                     + std::to_string(client0->colorB) + delimiter
-                    + txts[2]; ///\0??
+                    + txts[2];
 
                 const char* const normalMsgCStr = normalMsg.c_str();
                     
                 for(Client* const client1: activeClients){
-                    result = send(client1->mySocket, normalMsgCStr, normalMsg.length(), 0);
+                    result = send(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0); //+1 for a '\0'
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         normalMsgCStr,
@@ -183,8 +183,6 @@ void Winsock::ProcessRS(SOCKET& currSocket){
 
             (void)printf("\n");
         }
-
-        break;
     }
 }
 
