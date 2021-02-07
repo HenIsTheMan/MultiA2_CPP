@@ -95,7 +95,7 @@ void Winsock::OnClientConnected(Server* const server){
         (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
     #endif
 
-    std::string updateClientsMsg = "~/UpdateClients";
+    /*std::string updateClientsMsg = "~/UpdateClients";
     for(int i = 0; i < clientsSize; ++i){
         Client* currClient = activeClients[i];
         updateClientsMsg += ' ' + currClient->index;
@@ -116,7 +116,7 @@ void Winsock::OnClientConnected(Server* const server){
         client->address.sin_addr.S_un.S_un_b.s_b4,
         ntohs(client->address.sin_port),
         result
-    );
+    );*/
 }
 
 void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
@@ -141,55 +141,72 @@ void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
 void Winsock::ProcessRS(SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
-            const std::string rawStr(msgBuffer);
 
-            if(rawStr[0] == '~' && rawStr[1] == '/') {
-                const int rawStrLen = rawStr.length();
+            std::string pureStr(msgBuffer);
+            int pureStrLen = pureStr.length();
+            char pureDelimiter = '\0';
+            std::vector<int> pureDelimiterPos;
 
-                std::vector<int> spacePosIndices;
-                spacePosIndices.reserve(rawStrLen);
-                for(int i = 0; i < rawStrLen; ++i){
-                    if(rawStr[i] == ' ') {
-                        spacePosIndices.emplace_back(i);
+            for(int i = 0; i < pureStrLen; ++i) {
+                if(pureStr[i] == pureDelimiter) {
+                    if(i < pureStrLen - 1 && pureStr[i + 1] == pureDelimiter) {
+                        break;
+                    }
+                    pureDelimiterPos.emplace_back(i);
+                }
+            }
+
+            int pureDelimiterPosSize = (int)pureDelimiterPos.size();
+            std::vector<std::string> rawStrs;
+
+            for(int i = 0; i < pureDelimiterPosSize; ++i) {
+                if(i == 0) {
+                    rawStrs.emplace_back(pureStr.substr(0, pureDelimiterPos[0]));
+                } else {
+                    int startIndex = pureDelimiterPos[i - 1] + 1;
+                    rawStrs.emplace_back(pureStr.substr(startIndex, pureDelimiterPos[i] - startIndex));
+                }
+            }
+
+            int rawStrsSize = (int)pureDelimiterPos.size();
+            for(int i = 0; i < rawStrsSize; ++i) {
+                std::string rawStr = rawStrs[i];
+                int rawStrLen = rawStr.length();
+                char delimiter = ' ';
+
+                std::vector<int> delimiterPos;
+                for(int j = 0, count = 0; j < rawStrLen && count <= 2; ++j) {
+                    if(rawStr[j] == delimiter) {
+                        delimiterPos.emplace_back(j);
+                        ++count;
                     }
                 }
 
-                const int spacePosIndicesSize = (int)spacePosIndices.size();
-                if(spacePosIndicesSize > 0){
-                    std::vector<std::string> txts;
-                    txts.reserve(spacePosIndicesSize);
-                    for(int i = 0; i < spacePosIndicesSize; ++i) {
-                        if(i == 0) {
-                            txts.emplace_back(rawStr.substr(0, spacePosIndices[0]));
-                        } else {
-                            txts.emplace_back(rawStr.substr(spacePosIndices[i - 1] + 1, spacePosIndices[i] - (spacePosIndices[i - 1] + 1)));
+                std::vector<std::string> txts{
+                    rawStr.substr(0, delimiterPos[0]),
+                    rawStr.substr(delimiterPos[0] + 1, delimiterPos[1] - (delimiterPos[0] + 1)),
+                    rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
+                };
 
-                            if(i == spacePosIndicesSize - 1 && spacePosIndices[i] + 1 < rawStrLen) {
-                                txts.emplace_back(rawStr.substr(spacePosIndices[i] + 1, rawStrLen - 1 - spacePosIndices[i]));
-                            }
-                        }
-                    }
+                //const std::string commandIdentifier = txts[0].substr(2);
 
-                    const std::string commandIdentifier = txts[0].substr(2);
+                //if(commandIdentifier == "UpdateClients"){
+                //    const int txtsCountMinusOne = txts.size() - 1;
+                //    const int membersToUpdateCount = 5;
+                //        
+                //    for(Client* const client: activeClients){ //will crash??
+                //        clientPool->DeactivateObj(client);
+                //    }
 
-                    if(commandIdentifier == "UpdateClients"){
-                        const int txtsCountMinusOne = txts.size() - 1;
-                        const int membersToUpdateCount = 5;
-                        
-                        for(Client* const client: activeClients){ //will crash??
-                            clientPool->DeactivateObj(client);
-                        }
-
-                        for(int offset = 0; offset < txtsCountMinusOne / membersToUpdateCount; ++offset) {
-                            Client* const client = clientPool->ActivateObj();
-                            client->index = stoi(txts[1 + offset]);
-                            client->username = txts[2 + offset];
-                            client->colorR = stof(txts[3 + offset]);
-                            client->colorG = stof(txts[4 + offset]);
-                            client->colorB = stof(txts[5 + offset]);
-                        }
-                    }
-                }
+                //    for(int offset = 0; offset < txtsCountMinusOne / membersToUpdateCount; ++offset) {
+                //        Client* const client = clientPool->ActivateObj();
+                //        client->index = stoi(txts[1 + offset]);
+                //        client->username = txts[2 + offset];
+                //        client->colorR = stof(txts[3 + offset]);
+                //        client->colorG = stof(txts[4 + offset]);
+                //        client->colorB = stof(txts[5 + offset]);
+                //    }
+                //}
             }
 
             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
