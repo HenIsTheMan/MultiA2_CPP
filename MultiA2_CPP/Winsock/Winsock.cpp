@@ -250,6 +250,21 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                             result
                         );
                     }
+                } else{
+                    const std::string unknownCommandMsg = "1 / Server 0.0 0.0 0.0 Unrecognized command!" + (std::string)" \"" + txts[1] + '\"';
+                    const char* const unknownCommandMsgCStr = unknownCommandMsg.c_str();
+
+                    result = send(client0->mySocket, unknownCommandMsgCStr, unknownCommandMsg.length() + 1, 0); //+1 for a '\0'
+
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                        unknownCommandMsgCStr,
+                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client0->address.sin_port),
+                        result
+                    );
                 }
             }
 
