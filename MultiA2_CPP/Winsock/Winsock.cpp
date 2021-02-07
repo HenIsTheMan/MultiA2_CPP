@@ -273,6 +273,25 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         );
                     }
                 } else if(commandIdentifier == "me"){
+                    const std::string meMsg = "-1 /DataMe "
+                        + client0->username + ' '
+                        + std::to_string(client0->colorR) + ' '
+                        + std::to_string(client0->colorG) + ' '
+                        + std::to_string(client0->colorB) + ' '
+                        + (client0->isAfk ? "true" : "false");
+                    const char* const meMsgCStr = meMsg.c_str();
+
+                    result = send(client0->mySocket, meMsgCStr, meMsg.length(), 0);
+
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                        meMsgCStr,
+                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client0->address.sin_port),
+                        result
+                    );
                 } else if(commandIdentifier == "afk"){
                     client0->isAfk = !client0->isAfk;
 
