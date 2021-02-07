@@ -76,6 +76,8 @@ void Winsock::RunChiefProcess(Server* const server){
 }
 
 void Winsock::OnClientConnected(Server* const server){
+    const int clientsSize = (int)activeClients.size();
+
     Client* const client = ActivateClient();
     client->mySocket = accept(server->mySocket, (SOCKADDR*)&client->address, &client->sizeOfAddress);
 
@@ -93,7 +95,16 @@ void Winsock::OnClientConnected(Server* const server){
         (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
     #endif
 
-    const std::string updateClientsMsg = "~/UpdateClients";
+    std::string updateClientsMsg = "~/UpdateClients";
+    for(int i = 0; i < clientsSize; ++i){
+        Client* currClient = activeClients[i];
+        updateClientsMsg += ' ' + currClient->index;
+        updateClientsMsg += ' ' + currClient->username;
+        updateClientsMsg += ' ' + currClient->colorR;
+        updateClientsMsg += ' ' + currClient->colorG;
+        updateClientsMsg += ' ' + currClient->colorB;
+    }
+
     const char* const updateClientsMsgCstr = updateClientsMsg.c_str();
     result = send(client->mySocket, updateClientsMsgCstr, updateClientsMsg.length() + 1, 0); //??
 
@@ -160,10 +171,23 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     }
 
                     const std::string commandIdentifier = txts[0].substr(2);
-                } else{
-                    const std::string commandIdentifier = rawStr.substr(2);
+
                     if(commandIdentifier == "UpdateClients"){
-                        //...??
+                        const int txtsCountMinusOne = txts.size() - 1;
+                        const int membersToUpdateCount = 5;
+                        
+                        for(Client* const client: activeClients){ //will crash??
+                            clientPool->DeactivateObj(client);
+                        }
+
+                        for(int offset = 0; offset < txtsCountMinusOne / membersToUpdateCount; ++offset) {
+                            Client* const client = clientPool->ActivateObj();
+                            client->index = stoi(txts[1 + offset]);
+                            client->username = txts[2 + offset];
+                            client->colorR = stof(txts[3 + offset]);
+                            client->colorG = stof(txts[4 + offset]);
+                            client->colorB = stof(txts[5 + offset]);
+                        }
                     }
                 }
             }
