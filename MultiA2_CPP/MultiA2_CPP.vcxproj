@@ -151,8 +151,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Color.hpp" />
     <ClInclude Include="ObjPool\ObjPool.h" />
-    <ClInclude Include="Pseudorand.h" />
+    <ClInclude Include="Pseudorand.hpp" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Core.hpp" />

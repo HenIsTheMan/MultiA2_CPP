@@ -1,6 +1,7 @@
 #include "Winsock.h"
 
-#include "Pseudorand.h"
+#include "Color.hpp"
+#include "Pseudorand.hpp"
 
 Winsock::~Winsock(){
     if(clientPool != nullptr){
@@ -177,9 +178,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 const std::string commandIdentifier = txts[1].substr(1);
                 if(commandIdentifier == "NewClientJoined"){
                     client0->username = txts[2];
-                    client0->colorR = PseudorandMinMax(0.0f, 1.0f);
-                    client0->colorG = PseudorandMinMax(0.0f, 1.0f);
-                    client0->colorB = PseudorandMinMax(0.0f, 1.0f);
+
+                    const Color randColorRGB = Color::HSVToRGB({PseudorandMinMax(0.0f, 360.0f), PseudorandMinMax(0.0f, 1.0f), PseudorandMinMax(0.0f, 0.7f)});
+                    client0->colorR = randColorRGB.r;
+                    client0->colorG = randColorRGB.g;
+                    client0->colorB = randColorRGB.b;
 
                     static const std::string otherWelcomeMsgPostfixes[]{
                         " just joined the server!",

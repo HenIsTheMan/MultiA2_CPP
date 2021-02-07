@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 
-#include "Pseudorand.h"
+#include "Pseudorand.hpp"
 
 int main(const int argc, const char* const* const argv){
 	(void)_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
