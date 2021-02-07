@@ -180,6 +180,47 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     client0->colorR = PseudorandMinMax(0.0f, 1.0f);
                     client0->colorG = PseudorandMinMax(0.0f, 1.0f);
                     client0->colorB = PseudorandMinMax(0.0f, 1.0f);
+
+                    static const std::string otherWelcomeMsgPostfixes[]{
+                        " just joined the server!",
+                        " just hopped in!",
+                        " has just arrived!",
+                        " has entered the chat!",
+                    };
+                    static const int otherWelcomeMsgPostfixesSize = int(sizeof(otherWelcomeMsgPostfixes) / sizeof(otherWelcomeMsgPostfixes[0]));
+
+                    const std::string welcomeMsg = "1 / Server 0.0 0.0 0.0 Welcome to Virtual Chat!";
+                    const char* const welcomeMsgCStr = welcomeMsg.c_str();
+                    const std::string otherWelcomeMsg = "1 / Server 0.0 0.0 0.0 " + client0->username + otherWelcomeMsgPostfixes[PseudorandMinMax(0, otherWelcomeMsgPostfixesSize - 1)];
+                    const char* const otherWelcomeMsgCStr = otherWelcomeMsg.c_str();
+
+                    for(Client* const client1: activeClients){
+                        if(client1 == client0){
+                            result = send(client1->mySocket, welcomeMsgCStr, welcomeMsg.length() + 1, 0); //+1 for a '\0'
+
+                            (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                                welcomeMsgCStr,
+                                client1->address.sin_addr.S_un.S_un_b.s_b1,
+                                client1->address.sin_addr.S_un.S_un_b.s_b2,
+                                client1->address.sin_addr.S_un.S_un_b.s_b3,
+                                client1->address.sin_addr.S_un.S_un_b.s_b4,
+                                ntohs(client1->address.sin_port),
+                                result
+                            );
+                        } else if(client1->username != ""){
+                            result = send(client1->mySocket, otherWelcomeMsgCStr, otherWelcomeMsg.length() + 1, 0); //+1 for a '\0'
+
+                            (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                                otherWelcomeMsgCStr,
+                                client1->address.sin_addr.S_un.S_un_b.s_b1,
+                                client1->address.sin_addr.S_un.S_un_b.s_b2,
+                                client1->address.sin_addr.S_un.S_un_b.s_b3,
+                                client1->address.sin_addr.S_un.S_un_b.s_b4,
+                                ntohs(client1->address.sin_port),
+                                result
+                            );
+                        }
+                    }
                 } else if(commandIdentifier == "Clear" || commandIdentifier == "clear"){
                     result = send(client0->mySocket, msgBuffer, msgBufferSize, 0);
 
