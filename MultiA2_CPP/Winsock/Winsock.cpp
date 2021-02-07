@@ -192,6 +192,20 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         ntohs(client0->address.sin_port),
                         result
                     );
+                } else if(commandIdentifier == "Wipe" || commandIdentifier == "wipe"){
+                    for(Client* const client1: activeClients){
+                        result = send(client1->mySocket, msgBuffer, msgBufferSize, 0);
+
+                        (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                            msgBuffer,
+                            client1->address.sin_addr.S_un.S_un_b.s_b1,
+                            client1->address.sin_addr.S_un.S_un_b.s_b2,
+                            client1->address.sin_addr.S_un.S_un_b.s_b3,
+                            client1->address.sin_addr.S_un.S_un_b.s_b4,
+                            ntohs(client1->address.sin_port),
+                            result
+                        );
+                    }
                 }
             }
 
