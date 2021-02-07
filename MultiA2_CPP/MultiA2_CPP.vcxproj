@@ -157,6 +157,7 @@
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Winsock\Client\Client.hpp" />
     <ClInclude Include="Core.hpp" />
+    <ClInclude Include="Winsock\Server\ProtocolType.hpp" />
     <ClInclude Include="Winsock\Server\Server.h" />
     <ClInclude Include="Winsock\Winsock.h" />
   </ItemGroup>

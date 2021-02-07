@@ -42,7 +42,7 @@ struct Winsock final{
 
 	void OnClientConnected(Server* const server);
 	void OnClientDisconnected(Server* const server, SOCKET& currSocket);
-	void ProcessRS(SOCKET& currSocket);
+	void ProcessRS(Server* const server, SOCKET& currSocket);
 
 	Client* ActivateClient() const;
 	Server* ActivateServer() const;

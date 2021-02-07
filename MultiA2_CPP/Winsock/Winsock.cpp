@@ -36,8 +36,16 @@ void Winsock::Run(){
         for(Server* const server: activeServers){
             tempFDS = server->readFDS;
 
-            if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
-                return (void)printf("select() error\n");
+            if(server->type == ProtocolType::TCP){
+                if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
+                    return (void)printf("select() error\n");
+                }
+            } else{
+                FD_SET(server->mySocket, &tempFDS);
+
+                if((result = select(server->mySocket, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){
+                    return (void)printf("select() error\n");
+                }
             }
 
             if(result == 0){
@@ -67,30 +75,49 @@ void Winsock::RunChiefProcess(Server* const server){
             OnClientConnected(server);
         } else{
             memset(msgBuffer, '\0', msgBufferSize);
-            result = recv(currSocket, msgBuffer, msgBufferSize, 0);
+
+            if(server->type == ProtocolType::TCP){
+                result = recv(currSocket, msgBuffer, msgBufferSize, 0);
+            } else{
+                for(Client* const client: activeClients){
+                    if(client->mySocket == currSocket){
+                        int len = sizeof(client->address);
+                        result = recvfrom(server->mySocket, msgBuffer, msgBufferSize, 0, (struct sockaddr*)&client->address, &len);
+                        break;
+                    }
+                }
+            }
 
             if(result <= 0){
                 OnClientDisconnected(server, currSocket);
             } else{
-                ProcessRS(currSocket);
+                ProcessRS(server, currSocket);
             }
         }
     }
 }
 
 void Winsock::OnClientConnected(Server* const server){
-    const int clientsSize = (int)activeClients.size();
-
     Client* const client = ActivateClient();
-    client->mySocket = accept(server->mySocket, (SOCKADDR*)&client->address, &client->sizeOfAddress);
 
-    if(client->mySocket == INVALID_SOCKET){
-        (void)printf("accept failed with error %ld\n", WSAGetLastError());
-        (void)closesocket(server->mySocket);
-        return (void)WSACleanup();
+    if(server->type == ProtocolType::TCP){
+        client->mySocket = accept(server->mySocket, (SOCKADDR*)&client->address, &client->sizeOfAddress);
+
+        if(client->mySocket == INVALID_SOCKET){
+            (void)printf("accept failed with error %ld\n", WSAGetLastError());
+            (void)closesocket(server->mySocket);
+            return (void)WSACleanup();
     }
 
-    FD_SET(client->mySocket, &server->readFDS);
+        FD_SET(client->mySocket, &server->readFDS);
+    } else{
+        if((client->mySocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) { 
+            (void)printf("socket creation failed"); 
+            (void)exit(1); 
+        }
+
+        FD_SET(client->mySocket, &tempFDS);
+    }
 
     #if _WIN64
         (void)printf("Client connected: Socket Handle [%llu]\n\n", client->mySocket);
@@ -118,7 +145,7 @@ void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
     FD_CLR(currSocket, &server->readFDS);
 }
 
-void Winsock::ProcessRS(SOCKET& currSocket){
+void Winsock::ProcessRS(Server* const server, SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
@@ -161,7 +188,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     
                 for(Client* const client1: activeClients){
                     if(txts[0] == "0" || (txts[0] == "1" && client1 == client0)){
-                        result = send(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0); //+1 for a '\0'
+                        if(server->type == ProtocolType::TCP){
+                            result = send(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0);
+                        } else{
+                            result = sendto(client1->mySocket, normalMsgCStr, normalMsg.length() + 1, 0, (struct sockaddr*)&client1->address, sizeof(client1->address)); //...
+                        }
 
                         (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                             normalMsgCStr,
@@ -206,7 +237,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
 
                     for(Client* const client1: activeClients){
                         if(client1 == client0){
-                            result = send(client1->mySocket, welcomeMsgCStr, welcomeMsg.length() + 1, 0); //+1 for a '\0'
+                            if(server->type == ProtocolType::TCP){
+                                result = send(client1->mySocket, welcomeMsgCStr, welcomeMsg.length() + 1, 0);
+                            } else{
+                                result = sendto(client1->mySocket, welcomeMsgCStr, welcomeMsg.length() + 1, 0, (struct sockaddr*)&client1->address, sizeof(client1->address));
+                            }
 
                             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                                 welcomeMsgCStr,
@@ -218,7 +253,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                                 result
                             );
                         } else if(client1->username != ""){
-                            result = send(client1->mySocket, otherWelcomeMsgCStr, otherWelcomeMsg.length() + 1, 0); //+1 for a '\0'
+                            if(server->type == ProtocolType::TCP){
+                                result = send(client1->mySocket, otherWelcomeMsgCStr, otherWelcomeMsg.length() + 1, 0);
+                            } else{
+                                result = sendto(client1->mySocket, otherWelcomeMsgCStr, otherWelcomeMsg.length() + 1, 0, (struct sockaddr*)&client1->address, sizeof(client1->address));
+                            }
 
                             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                                 otherWelcomeMsgCStr,
@@ -235,7 +274,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     const std::string countMsg = "1 / Server 0.0 0.0 0.0 Number of users online --- " + std::to_string(activeClients.size());
                     const char* const countMsgCStr = countMsg.c_str();
 
-                    result = send(client0->mySocket, countMsgCStr, countMsg.length() + 1, 0); //+1 for a '\0'
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, countMsgCStr, countMsg.length() + 1, 0);
+                    } else{
+                        result = sendto(client0->mySocket, countMsgCStr, countMsg.length() + 1, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         countMsgCStr,
@@ -247,7 +290,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         result
                     );
                 } else if(commandIdentifier == "clear"){
-                    result = send(client0->mySocket, msgBuffer, msgBufferSize, 0);
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, msgBuffer, msgBufferSize, 0);
+                    } else{
+                        result = sendto(client0->mySocket, msgBuffer, msgBufferSize, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         msgBuffer,
@@ -260,7 +307,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     );
                 } else if(commandIdentifier == "wipe"){
                     for(Client* const client1: activeClients){
-                        result = send(client1->mySocket, msgBuffer, msgBufferSize, 0);
+                        if(server->type == ProtocolType::TCP){
+                            result = send(client1->mySocket, msgBuffer, msgBufferSize, 0);
+                        } else{
+                            result = sendto(client1->mySocket, msgBuffer, msgBufferSize, 0, (struct sockaddr*)&client1->address, sizeof(client1->address));
+                        }
 
                         (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                             msgBuffer,
@@ -281,7 +332,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         + (client0->isAfk ? "true" : "false");
                     const char* const meMsgCStr = meMsg.c_str();
 
-                    result = send(client0->mySocket, meMsgCStr, meMsg.length(), 0);
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, meMsgCStr, meMsg.length() + 1, 0);
+                    } else{
+                        result = sendto(client0->mySocket, meMsgCStr, meMsg.length() + 1, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         meMsgCStr,
@@ -298,7 +353,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     const std::string afkMsg = "1 / Server 0.0 0.0 0.0 You are now " + std::string(client0->isAfk ? "" : "not ") + "afk...";
                     const char* const afkMsgCStr = afkMsg.c_str();
 
-                    result = send(client0->mySocket, afkMsgCStr, afkMsg.length() + 1, 0); //+1 for a '\0'
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, afkMsgCStr, afkMsg.length() + 1, 0);
+                    } else{
+                        result = sendto(client0->mySocket, afkMsgCStr, afkMsg.length() + 1, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         afkMsgCStr,
@@ -316,7 +375,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     }
                     const char* const whoMsgCStr = whoMsg.c_str();
 
-                    result = send(client0->mySocket, whoMsgCStr, whoMsg.length(), 0);
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, whoMsgCStr, whoMsg.length() + 1, 0);
+                    } else{
+                        result = sendto(client0->mySocket, whoMsgCStr, whoMsg.length() + 1, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         whoMsgCStr,
@@ -331,7 +394,11 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     const std::string unknownCommandMsg = "1 / Server 0.0 0.0 0.0 Unrecognized command!" + (std::string)" \"" + txts[1] + '\"';
                     const char* const unknownCommandMsgCStr = unknownCommandMsg.c_str();
 
-                    result = send(client0->mySocket, unknownCommandMsgCStr, unknownCommandMsg.length() + 1, 0); //+1 for a '\0'
+                    if(server->type == ProtocolType::TCP){
+                        result = send(client0->mySocket, unknownCommandMsgCStr, unknownCommandMsg.length() + 1, 0);
+                    } else{
+                        result = sendto(client0->mySocket, unknownCommandMsgCStr, unknownCommandMsg.length() + 1, 0, (struct sockaddr*)&client0->address, sizeof(client0->address));
+                    }
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         unknownCommandMsgCStr,

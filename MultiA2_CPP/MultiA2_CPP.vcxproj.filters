@@ -9,6 +9,7 @@
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Pseudorand.hpp" />
     <ClInclude Include="Color.hpp" />
+    <ClInclude Include="Winsock\Server\ProtocolType.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EntryPt.cpp" />
