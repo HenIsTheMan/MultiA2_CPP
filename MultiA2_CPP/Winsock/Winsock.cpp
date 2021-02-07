@@ -135,7 +135,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
             const char delimiter = ' ';
 
             std::vector<int> delimiterPos;
-            for(int j = 0, count = 0; j < rawStrLen && count <= 2; ++j) {
+            for(int j = 0, count = 0; j < rawStrLen && count < 2; ++j) {
                 if(rawStr[j] == delimiter) {
                     delimiterPos.emplace_back(j);
                     ++count;
@@ -180,6 +180,18 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     client0->colorR = PseudorandMinMax(0.0f, 1.0f);
                     client0->colorG = PseudorandMinMax(0.0f, 1.0f);
                     client0->colorB = PseudorandMinMax(0.0f, 1.0f);
+                } else if(commandIdentifier == "Clear" || commandIdentifier == "clear"){
+                    result = send(client0->mySocket, msgBuffer, msgBufferSize, 0);
+
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                        msgBuffer,
+                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client0->address.sin_port),
+                        result
+                    );
                 }
             }
 
