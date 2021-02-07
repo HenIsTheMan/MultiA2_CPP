@@ -1,5 +1,7 @@
 #include "Winsock.h"
 
+#include "Pseudorand.h"
+
 Winsock::~Winsock(){
     if(clientPool != nullptr){
         clientPool->Destroy();
@@ -94,29 +96,6 @@ void Winsock::OnClientConnected(Server* const server){
     #else
         (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
     #endif
-
-    /*std::string updateClientsMsg = "~/UpdateClients";
-    for(int i = 0; i < clientsSize; ++i){
-        Client* currClient = activeClients[i];
-        updateClientsMsg += ' ' + currClient->index;
-        updateClientsMsg += ' ' + currClient->username;
-        updateClientsMsg += ' ' + currClient->colorR;
-        updateClientsMsg += ' ' + currClient->colorG;
-        updateClientsMsg += ' ' + currClient->colorB;
-    }
-
-    const char* const updateClientsMsgCstr = updateClientsMsg.c_str();
-    result = send(client->mySocket, updateClientsMsgCstr, updateClientsMsg.length(), 0);
-
-    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
-        updateClientsMsgCstr,
-        client->address.sin_addr.S_un.S_un_b.s_b1,
-        client->address.sin_addr.S_un.S_un_b.s_b2,
-        client->address.sin_addr.S_un.S_un_b.s_b3,
-        client->address.sin_addr.S_un.S_un_b.s_b4,
-        ntohs(client->address.sin_port),
-        result
-    );*/
 }
 
 void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
@@ -141,6 +120,7 @@ void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
 void Winsock::ProcessRS(SOCKET& currSocket){
     for(Client* const client0: activeClients){
         if(client0->mySocket == currSocket){
+            bool sendBack = true;
 
             std::string pureStr(msgBuffer);
             int pureStrLen = pureStr.length();
@@ -188,25 +168,41 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
                 };
 
-                //const std::string commandIdentifier = txts[0].substr(2);
+                const std::string commandIdentifier = txts[1].substr(1);
+                if(commandIdentifier == "NewClientJoined"){
+                    sendBack = false;
 
-                //if(commandIdentifier == "UpdateClients"){
-                //    const int txtsCountMinusOne = txts.size() - 1;
-                //    const int membersToUpdateCount = 5;
-                //        
-                //    for(Client* const client: activeClients){ //will crash??
-                //        clientPool->DeactivateObj(client);
-                //    }
+                    const std::string& msgTxt = txts[2];
+                    const int msgTxtLen = msgTxt.length();
+                    char msgDelimiter = ' ';
 
-                //    for(int offset = 0; offset < txtsCountMinusOne / membersToUpdateCount; ++offset) {
-                //        Client* const client = clientPool->ActivateObj();
-                //        client->index = stoi(txts[1 + offset]);
-                //        client->username = txts[2 + offset];
-                //        client->colorR = stof(txts[3 + offset]);
-                //        client->colorG = stof(txts[4 + offset]);
-                //        client->colorB = stof(txts[5 + offset]);
-                //    }
-                //}
+                    std::vector<int> msgDelimiterPos;
+                    for(int j = 0; j < msgTxtLen; ++j) {
+                        if(msgTxt[j] == msgDelimiter) {
+                            msgDelimiterPos.emplace_back(j);
+                        }
+                    }
+
+                    const int msgDelimiterPosSize = (int)msgDelimiterPos.size();
+                    std::vector<std::string> contentTxts;
+
+                    for(int j = 0; j < msgDelimiterPosSize; ++j){
+                        if(j == 0) {
+                            contentTxts.emplace_back(msgTxt.substr(0, msgDelimiterPos[0]));
+                        } else {
+                            contentTxts.emplace_back(msgTxt.substr(msgDelimiterPos[j - 1] + 1, msgDelimiterPos[j] - (msgDelimiterPos[j - 1] + 1)));
+
+                            if(j == msgDelimiterPosSize - 1 && msgDelimiterPos[j] + 1 < rawStrLen) {
+                                contentTxts.emplace_back(msgTxt.substr(msgDelimiterPos[j] + 1, rawStrLen - 1 - msgDelimiterPos[j]));
+                            }
+                        }
+                    }
+
+                    client0->username = contentTxts[0];
+                    client0->colorR = PseudorandMinMax(0.0f, 1.0f);
+                    client0->colorG = PseudorandMinMax(0.0f, 1.0f);
+                    client0->colorB = PseudorandMinMax(0.0f, 1.0f);
+                }
             }
 
             (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes read: %d)\n",
@@ -219,18 +215,20 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 result
             );
 
-            for(Client* const client1: activeClients){
-                result = send(client1->mySocket, msgBuffer, result, 0);
+            if(sendBack){
+                for(Client* const client1 : activeClients){
+                    result = send(client1->mySocket, msgBuffer, result, 0);
 
-                (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
-                    msgBuffer,
-                    client1->address.sin_addr.S_un.S_un_b.s_b1,
-                    client1->address.sin_addr.S_un.S_un_b.s_b2,
-                    client1->address.sin_addr.S_un.S_un_b.s_b3,
-                    client1->address.sin_addr.S_un.S_un_b.s_b4,
-                    ntohs(client1->address.sin_port),
-                    result
-                );
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+                        msgBuffer,
+                        client1->address.sin_addr.S_un.S_un_b.s_b1,
+                        client1->address.sin_addr.S_un.S_un_b.s_b2,
+                        client1->address.sin_addr.S_un.S_un_b.s_b3,
+                        client1->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client1->address.sin_port),
+                        result
+                    );
+                }
             }
 
             break;
