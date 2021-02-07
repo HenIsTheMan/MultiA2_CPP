@@ -130,93 +130,59 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 result
             );
 
-            std::string pureStr(msgBuffer);
-            int pureStrLen = pureStr.length();
-            char pureDelimiter = '\0';
-            std::vector<int> pureDelimiterPos;
+            const std::string rawStr(msgBuffer);
+            const int rawStrLen = rawStr.length();
+            const char delimiter = ' ';
 
-            for(int i = 0; i < pureStrLen; ++i) {
-                if(pureStr[i] == pureDelimiter) {
-                    if(i < pureStrLen - 1 && pureStr[i + 1] == pureDelimiter) {
-                        break;
-                    }
-                    pureDelimiterPos.emplace_back(i);
+            std::vector<int> delimiterPos;
+            for(int j = 0, count = 0; j < rawStrLen && count <= 2; ++j) {
+                if(rawStr[j] == delimiter) {
+                    delimiterPos.emplace_back(j);
+                    ++count;
                 }
             }
 
-            int pureDelimiterPosSize = (int)pureDelimiterPos.size();
-            std::vector<std::string> rawStrs;
+            std::vector<std::string> txts{
+                rawStr.substr(0, delimiterPos[0]),
+                rawStr.substr(delimiterPos[0] + 1, delimiterPos[1] - (delimiterPos[0] + 1)),
+                rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
+            };
 
-            for(int i = 0; i < pureDelimiterPosSize; ++i) {
-                if(i == 0) {
-                    rawStrs.emplace_back(pureStr.substr(0, pureDelimiterPos[0]));
-                } else {
-                    int startIndex = pureDelimiterPos[i - 1] + 1;
-                    rawStrs.emplace_back(pureStr.substr(startIndex, pureDelimiterPos[i] - startIndex));
-                }
-            }
+            if(txts[1].length() == 1){
+                const std::string normalMsg = "-1 / "
+                    + client0->username + delimiter
+                    + std::to_string(client0->colorR) + delimiter
+                    + std::to_string(client0->colorG) + delimiter
+                    + std::to_string(client0->colorB) + delimiter
+                    + txts[2]; ///\0??
 
-            int rawStrsSize = (int)rawStrs.size();
-            for(int i = 0; i < rawStrsSize; ++i) {
-                std::string rawStr = rawStrs[i];
-                int rawStrLen = rawStr.length();
-                char delimiter = ' ';
-
-                std::vector<int> delimiterPos;
-                for(int j = 0, count = 0; j < rawStrLen && count <= 2; ++j) {
-                    if(rawStr[j] == delimiter) {
-                        delimiterPos.emplace_back(j);
-                        ++count;
-                    }
-                }
-
-                std::vector<std::string> txts{
-                    rawStr.substr(0, delimiterPos[0]),
-                    rawStr.substr(delimiterPos[0] + 1, delimiterPos[1] - (delimiterPos[0] + 1)),
-                    rawStr.substr(delimiterPos[1] + 1, rawStrLen - delimiterPos[1] - 1)
-                };
-
-                ///
-                for(auto str: txts){
-                    (void)puts(str.c_str());
-                }
-
-                if(txts[1].length() == 1){
-                    const std::string normalMsg = "-1 / "
-                        + client0->username + delimiter
-                        + std::to_string(client0->colorR) + delimiter
-                        + std::to_string(client0->colorG) + delimiter
-                        + std::to_string(client0->colorB) + delimiter
-                        + txts[2];
-
-                    const char* const normalMsgCStr = normalMsg.c_str();
+                const char* const normalMsgCStr = normalMsg.c_str();
                     
-                    for(Client* const client1: activeClients){
-                        result = send(client1->mySocket, normalMsgCStr, normalMsg.length(), 0);
+                for(Client* const client1: activeClients){
+                    result = send(client1->mySocket, normalMsgCStr, normalMsg.length(), 0);
 
-                        (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
-                            normalMsgCStr,
-                            client1->address.sin_addr.S_un.S_un_b.s_b1,
-                            client1->address.sin_addr.S_un.S_un_b.s_b2,
-                            client1->address.sin_addr.S_un.S_un_b.s_b3,
-                            client1->address.sin_addr.S_un.S_un_b.s_b4,
-                            ntohs(client1->address.sin_port),
-                            result
-                        );
-                    }
-                } else{
-                    const std::string commandIdentifier = txts[1].substr(1);
-                    if(commandIdentifier == "NewClientJoined"){
-                        client0->username = txts[2];
-                        client0->colorR = PseudorandMinMax(0.0f, 1.0f);
-                        client0->colorG = PseudorandMinMax(0.0f, 1.0f);
-                        client0->colorB = PseudorandMinMax(0.0f, 1.0f);
-                    }
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+                        normalMsgCStr,
+                        client1->address.sin_addr.S_un.S_un_b.s_b1,
+                        client1->address.sin_addr.S_un.S_un_b.s_b2,
+                        client1->address.sin_addr.S_un.S_un_b.s_b3,
+                        client1->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client1->address.sin_port),
+                        result
+                    );
+                }
+            } else{
+                const std::string commandIdentifier = txts[1].substr(1);
+                if(commandIdentifier == "NewClientJoined"){
+                    client0->username = txts[2];
+                    client0->colorR = PseudorandMinMax(0.0f, 1.0f);
+                    client0->colorG = PseudorandMinMax(0.0f, 1.0f);
+                    client0->colorB = PseudorandMinMax(0.0f, 1.0f);
                 }
             }
-
-            break;
         }
+
+        break;
     }
 }
 
