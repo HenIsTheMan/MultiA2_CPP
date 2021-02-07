@@ -175,14 +175,21 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     }
                 }
             } else{
-                const std::string commandIdentifier = txts[1].substr(1);
-                if(commandIdentifier == "NewClientJoined"){
+                std::string commandIdentifier = txts[1].substr(1);
+
+                std::for_each(commandIdentifier.begin(), commandIdentifier.end(), [](char & c){
+                    c = ::tolower(c);
+                });
+
+                if(commandIdentifier == "newclientjoined"){
                     client0->username = txts[2];
 
                     const Color randColorRGB = Color::HSVToRGB({PseudorandMinMax(0.0f, 360.0f), PseudorandMinMax(0.0f, 1.0f), PseudorandMinMax(0.0f, 0.7f)});
                     client0->colorR = randColorRGB.r;
                     client0->colorG = randColorRGB.g;
                     client0->colorB = randColorRGB.b;
+
+                    client0->isAfk = false;
 
                     static const std::string otherWelcomeMsgPostfixes[]{
                         " just joined the server!",
@@ -224,7 +231,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                             );
                         }
                     }
-                } else if(commandIdentifier == "Count" || commandIdentifier == "count"){
+                } else if(commandIdentifier == "count"){
                     const std::string countMsg = "1 / Server 0.0 0.0 0.0 Number of users online --- " + std::to_string(activeClients.size());
                     const char* const countMsgCStr = countMsg.c_str();
 
@@ -239,7 +246,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         ntohs(client0->address.sin_port),
                         result
                     );
-                } else if(commandIdentifier == "Clear" || commandIdentifier == "clear"){
+                } else if(commandIdentifier == "clear"){
                     result = send(client0->mySocket, msgBuffer, msgBufferSize, 0);
 
                     (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
@@ -251,7 +258,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         ntohs(client0->address.sin_port),
                         result
                     );
-                } else if(commandIdentifier == "Wipe" || commandIdentifier == "wipe"){
+                } else if(commandIdentifier == "wipe"){
                     for(Client* const client1: activeClients){
                         result = send(client1->mySocket, msgBuffer, msgBufferSize, 0);
 
@@ -265,6 +272,24 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                             result
                         );
                     }
+                } else if(commandIdentifier == "me"){
+                } else if(commandIdentifier == "afk"){
+                    client0->isAfk = !client0->isAfk;
+
+                    const std::string afkMsg = "1 / Server 0.0 0.0 0.0 You are now " + std::string(client0->isAfk ? "" : "not ") + "afk...";
+                    const char* const afkMsgCStr = afkMsg.c_str();
+
+                    result = send(client0->mySocket, afkMsgCStr, afkMsg.length() + 1, 0); //+1 for a '\0'
+
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                        afkMsgCStr,
+                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client0->address.sin_port),
+                        result
+                    );
                 } else{
                     const std::string unknownCommandMsg = "1 / Server 0.0 0.0 0.0 Unrecognized command!" + (std::string)" \"" + txts[1] + '\"';
                     const char* const unknownCommandMsgCStr = unknownCommandMsg.c_str();
