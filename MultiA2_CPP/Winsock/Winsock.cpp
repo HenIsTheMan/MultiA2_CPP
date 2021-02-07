@@ -161,7 +161,7 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                 for(Client* const client1: activeClients){
                     result = send(client1->mySocket, normalMsgCStr, normalMsg.length(), 0);
 
-                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
                         normalMsgCStr,
                         client1->address.sin_addr.S_un.S_un_b.s_b1,
                         client1->address.sin_addr.S_un.S_un_b.s_b2,
@@ -180,6 +180,8 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     client0->colorB = PseudorandMinMax(0.0f, 1.0f);
                 }
             }
+
+            (void)printf("\n");
         }
 
         break;
