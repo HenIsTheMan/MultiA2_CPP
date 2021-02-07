@@ -309,6 +309,24 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                         ntohs(client0->address.sin_port),
                         result
                     );
+                } else if(commandIdentifier == "who"){
+                    std::string whoMsg = "-1 /DataWho";
+                    for(Client* const client1: activeClients){
+                        whoMsg += ' ' + client1->username + ' ' + (client1->isAfk ? "true" : "false");
+                    }
+                    const char* const whoMsgCStr = whoMsg.c_str();
+
+                    result = send(client0->mySocket, whoMsgCStr, whoMsg.length(), 0);
+
+                    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n",
+                        whoMsgCStr,
+                        client0->address.sin_addr.S_un.S_un_b.s_b1,
+                        client0->address.sin_addr.S_un.S_un_b.s_b2,
+                        client0->address.sin_addr.S_un.S_un_b.s_b3,
+                        client0->address.sin_addr.S_un.S_un_b.s_b4,
+                        ntohs(client0->address.sin_port),
+                        result
+                    );
                 } else{
                     const std::string unknownCommandMsg = "1 / Server 0.0 0.0 0.0 Unrecognized command!" + (std::string)" \"" + txts[1] + '\"';
                     const char* const unknownCommandMsgCStr = unknownCommandMsg.c_str();
