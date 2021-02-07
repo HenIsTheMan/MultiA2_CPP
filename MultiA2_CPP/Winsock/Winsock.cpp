@@ -92,6 +92,20 @@ void Winsock::OnClientConnected(Server* const server){
     #else
         (void)printf("Client connected: Socket Handle [%u]\n\n", client->mySocket);
     #endif
+
+    const std::string updateClientsMsg = "~/UpdateClients";
+    const char* const updateClientsMsgCstr = updateClientsMsg.c_str();
+    result = send(client->mySocket, updateClientsMsgCstr, updateClientsMsg.length() + 1, 0); //??
+
+    (void)printf("\"%s\" [%d.%d.%d.%d:%d] (bytes sent: %d)\n\n",
+        updateClientsMsgCstr,
+        client->address.sin_addr.S_un.S_un_b.s_b1,
+        client->address.sin_addr.S_un.S_un_b.s_b2,
+        client->address.sin_addr.S_un.S_un_b.s_b3,
+        client->address.sin_addr.S_un.S_un_b.s_b4,
+        ntohs(client->address.sin_port),
+        result
+    );
 }
 
 void Winsock::OnClientDisconnected(Server* const server, SOCKET& currSocket){
@@ -146,15 +160,10 @@ void Winsock::ProcessRS(SOCKET& currSocket){
                     }
 
                     const std::string commandIdentifier = txts[0].substr(2);
-                    if(commandIdentifier == "AddClient") {
-                        const int clientIndex = stoi(txts[1]);
-                        Client* const client = activeClients[clientIndex];
-
-                        client->index = clientIndex;
-                        client->username = txts[2];
-                        client->colorR = stof(txts[3]);
-                        client->colorG = stof(txts[4]);
-                        client->colorB = stof(txts[5]);
+                } else{
+                    const std::string commandIdentifier = rawStr.substr(2);
+                    if(commandIdentifier == "UpdateClients"){
+                        //...??
                     }
                 }
             }
