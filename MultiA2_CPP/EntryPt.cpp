@@ -1,5 +1,6 @@
 #include "Winsock/Winsock.h"
 
+#include <conio.h>
 #include <unordered_set>
 
 #include "Pseudorand.hpp"
@@ -19,6 +20,12 @@ int main(const int argc, const char* const* const argv){
 	(void)ShowWindow(GetConsoleWindow(), SW_MAXIMIZE);
 	(void)SetLayeredWindowAttributes(GetConsoleWindow(), NULL, 230, LWA_ALPHA);
 	(void)SetConsoleTitleA(((std::string)"Console Window (" + SLN_CONFIG + ' ' + SLN_PLAT + ')').c_str());
+
+	HANDLE StdHandle = GetStdHandle(DWORD(-11));
+	CONSOLE_CURSOR_INFO cursorInfo;
+	GetConsoleCursorInfo(StdHandle, &cursorInfo);
+	cursorInfo.bVisible = 0;
+	SetConsoleCursorInfo(StdHandle, &cursorInfo);
 
 	PHANDLER_ROUTINE ConsoleEventHandler = [](const DWORD consoleEvent)->BOOL{
 		LPCWSTR msg;
@@ -45,6 +52,16 @@ int main(const int argc, const char* const* const argv){
 	};
 	(void)SetConsoleCtrlHandler(ConsoleEventHandler, TRUE);
 
+	(void)puts("0: TCP");
+	(void)puts("1: UDP");
+
+	int choice = -1;
+	do{
+		choice = _getch() - 48;
+	} while(choice != 0 && choice != 1);
+
+	system("cls");
+
     Winsock* winsock = new Winsock();
     Winsock::InitParams params;
 
@@ -70,7 +87,7 @@ int main(const int argc, const char* const* const argv){
 
         server->Init({
             val,
-			ProtocolType::UDP
+			choice == 0 ? ProtocolType::TCP : ProtocolType::UDP
         });
 		portNumbers.insert(val); 
     }

@@ -43,7 +43,7 @@ void Winsock::Run(){
             } else{
                 FD_SET(server->mySocket, &tempFDS);
 
-                if((result = select(server->mySocket, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){ //Can pass through when msg is sent
+                if((result = select(0, &tempFDS, 0, 0, &timeout)) == SOCKET_ERROR){ //Can pass through when msg is sent
                     return (void)printf("select() error\n");
                 }
             }

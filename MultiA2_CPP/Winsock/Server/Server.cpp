@@ -25,7 +25,7 @@ void Server::Init(const Server::InitParams& params){
 	}
     (void)remove("ipconfig.txt");
 
-    (void)printf("[I/O multiplexing server] [%s:%d] Waiting for clients to connect...\n\n", IPAddress.c_str(), portNumber);
+    (void)printf("[%s I/O multiplexing server] [%s:%d] Waiting for clients to connect...\n\n", type == ProtocolType::TCP ? "TCP" : "UDP", IPAddress.c_str(), portNumber);
 
     if(type == ProtocolType::TCP){
         mySocket = socket(AF_INET, SOCK_STREAM, 0);
