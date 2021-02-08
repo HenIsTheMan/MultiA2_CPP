@@ -41,6 +41,7 @@ struct Winsock final{
 	void RunChiefProcess(Server* const server);
 
 	void OnClientConnected(Server* const server);
+	Client* OnClientConnected(Server* const server, const SOCKADDR_IN clientAddress);
 	void OnClientDisconnected(Server* const server, SOCKET& currSocket);
 	void ProcessRS(Server* const server, SOCKET& currSocket);
 
